@@ -834,6 +834,12 @@ class BinanceWebSocketManager {
                 try{
                     const d=JSON.parse(event.data);
                     if(d.result!==undefined||d.id!==undefined) return; // respuesta de control
+                    // Unwrap combined stream: {"stream":"...","data":{...}}
+                    if(d.stream!==undefined && d.data!==undefined){
+                        const unwrapped=new MessageEvent('message',{data:JSON.stringify(d.data)});
+                        try{onMessageHandler(unwrapped);}catch(err){console.error(`Error procesando ${type}:`,err);}
+                        return;
+                    }
                 }catch(_){}
                 try{onMessageHandler(event);}catch(err){console.error(`Error procesando ${type}:`,err);}
             };
