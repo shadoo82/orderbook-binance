@@ -5631,7 +5631,8 @@ const SMC = {
             if (f.ext) return SMC.cfg.showFibExt !== false;
             return SMC.cfg.showFibRet !== false;
         });
-        return { levels: filteredLevels, high: realHigh, low: realLow, isBear, y1, y2, sub };
+        return { levels: filteredLevels, high: realHigh, low: realLow, isBear, y1, y2, sub,
+            fib: lvl => sub * lvl + y2 };  // exponer función fib para uso externo
     },
 
     // ══════════════════════════════════════════════
