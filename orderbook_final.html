@@ -2977,6 +2977,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                         high: prev ? Math.max(prev.high || price, price) : price,
                         ts:   Date.now(),
                     });
+                    window._watchlistPrices = window._watchlistPrices || {};
+                    window._watchlistPrices[sym] = price;
                     // Verificar zonas institucionales guardadas
                     checkZonesForSymbol(sym, price);
                     // Verificar zonas SMC (Fibonacci, FVG, OB, AOI) — solo para el par activo
@@ -3039,6 +3041,18 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         // No conectar tickers adicionales aquí para evitar duplicados
 
         console.log(`📡 Watchlist activo: ${[...activeSyms].join(', ')} (${activeSyms.size} pares)`);
+        // Fetch precio actual via REST para poblar _watchlistPrices inmediatamente
+        activeSyms.forEach(sym => {
+            if (sym === symbol) return;
+            if (window._watchlistPrices?.[sym]) return; // ya tiene precio
+            fetch(`https://fapi.binance.com/fapi/v1/ticker/price?symbol=${sym}`)
+                .then(r => r.json()).then(d => {
+                    if (d.price) {
+                        window._watchlistPrices = window._watchlistPrices || {};
+                        window._watchlistPrices[sym] = parseFloat(d.price);
+                    }
+                }).catch(()=>{});
+        });
 
         // Cargar velas 1h para todos los pares activos (necesario para filtros Mxwll)
         activeSyms.forEach(sym => {
@@ -3199,7 +3213,11 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
                 const dir    = isBid ? '🟢 LONG' : '🔴 SHORT';
                 const ti     = zone.tier==='WHALE' ? '🐋' : '🏛️';
-                const fp     = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+                const fp = n => {
+            if (!n && n !== 0) return '—';
+            const decimals = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
+            return n.toLocaleString('en-US',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+        };
                 const entry  = zone.price;
                 const sl     = isBid ? entry*(1-SL_PCT) : entry*(1+SL_PCT);
                 const risk   = Math.abs(entry-sl);
@@ -6773,7 +6791,11 @@ window._checkTradeSetupLevels = function(price) {
         const distToZone = Math.abs(price - zone.price) / zone.price;
         const dir    = isBid ? '🟢 LONG' : '🔴 SHORT';
         const ti     = zone.tier==='WHALE' ? '🐋' : '🏛️';
-        const fp     = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const fp = n => {
+            if (!n && n !== 0) return '—';
+            const decimals = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
+            return n.toLocaleString('en-US',{minimumFractionDigits:decimals,maximumFractionDigits:decimals});
+        };
         const SL_PCT = 0.020;
         const entry  = zone.price;
         const sl     = isBid ? entry*(1-SL_PCT) : entry*(1+SL_PCT);
@@ -7442,7 +7464,11 @@ window.checkFiboConfluence = function() {
         const isBid = zone.side === 'bid';
         const entry = zone.price;
         const sl    = isBid ? entry * 0.985 : entry * 1.015;
-        const fp    = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const fp    = n => {
+                    if (!n && n !== 0) return '—';
+                    const d = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
+                    return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+                };
         const usdt  = n => n >= 1e9 ? (n/1e9).toFixed(2)+'B' : n >= 1e6 ? (n/1e6).toFixed(2)+'M' : (n/1e3).toFixed(0)+'K';
 
         // TPs según dirección:
@@ -7957,7 +7983,11 @@ async function checkFiboConfluenceForPair(pair, price, zones) {
             const isBid   = zone.side === 'bid';
             const entry   = zone.price;
             const sl      = isBid ? entry * 0.985 : entry * 1.015;
-            const fp      = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+            const fp      = n => {
+                    if (!n && n !== 0) return '—';
+                    const d = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
+                    return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
+                };
             const usdt    = n => n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':(n/1e3).toFixed(0)+'K';
             const pct     = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
             const dir     = isBid ? '🟢 LONG' : '🔴 SHORT';
