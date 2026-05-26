@@ -606,7 +606,15 @@ class BinanceWebSocketManager {
         if (this.useSpot) return;  // Spot no tiene markPrice
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
-            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase() && this.symbol===wsManager?.symbol){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();}}catch(err){}
+            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase() && this.symbol===wsManager?.symbol){
+                markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
+                // Actualizar header con markPrice (necesario para pares solo-futuros como HYPE)
+                const _hdrPrc2=document.getElementById('hdr-price');
+                const _hdrSym2=document.getElementById('hdr-symbol');
+                if(_hdrSym2) _hdrSym2.textContent=symbol;
+                if(_hdrPrc2 && (_hdrPrc2.textContent==='$0.00'||_hdrPrc2.textContent==='Cargando...')){
+                    _hdrPrc2.textContent='$'+markPriceFutures.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+                }}}catch(err){}
         });
     }
     connectDepth() {
