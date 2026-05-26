@@ -8093,36 +8093,17 @@ function startWatchlistMonitor() {
 </script>
 
 
+
+
     <!-- Botón flotante guardar zonas -->
-    <button id="float-save-btn" 
+    <button id="float-save-btn"
         onclick="window.saveAllInstZones && window.saveAllInstZones()"
         title="Guardar zonas nuevas"
         style="position:fixed;bottom:80px;right:15px;z-index:99999;
                width:44px;height:44px;border-radius:50%;
-               background:rgba(0,200,100,0.9);border:2px solid #0c6;
-               color:#fff;font-size:18px;cursor:pointer;
-               display:flex;align-items:center;justify-content:center;
-               box-shadow:0 2px 8px rgba(0,0,0,0.4);
-               transition:all 0.2s;">💾</button>
-    <script>
-    // Actualizar badge del botón flotante con zonas nuevas
-    setInterval(() => {
-        const btn = document.getElementById('float-save-btn');
-        if (!btn) return;
-        const newZones = (window.institutionalZones || [])
-            .filter(z => !z.mitigated && !savedZonePrices?.has(Math.round(z.price * 100)));
-        if (newZones.length > 0) {
-            btn.style.background = 'rgba(255,165,0,0.95)';
-            btn.title = `Guardar ${newZones.length} zona(s) nueva(s)`;
-            btn.innerHTML = `💾<span style="position:absolute;top:-4px;right:-4px;background:#f24968;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;">${newZones.length}</span>`;
-            btn.style.position = 'fixed';
-        } else {
-            btn.style.background = 'rgba(0,200,100,0.7)';
-            btn.title = 'Sin zonas nuevas';
-            btn.innerHTML = '💾';
-        }
-    }, 3000);
-    </script>
+               background:rgba(0,200,100,0.85);border:2px solid #0c6;
+               color:#fff;font-size:20px;cursor:pointer;
+               box-shadow:0 2px 8px rgba(0,0,0,0.4);">💾</button>
 
 </body>
 </html>
