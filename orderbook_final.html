@@ -579,7 +579,7 @@ class BinanceWebSocketManager {
     connectTicker() {
         const wsUrl = this.useSpot
             ? `wss://stream.binance.com:9443/ws/${this.symbol}@ticker`
-            : `wss://stream.binancefuture.com/ws/${this.symbol}@ticker`;
+            : `wss://stream.binance.com/ws/${this.symbol}@ticker`;
         this.createWebSocket('ticker',wsUrl,(event)=>{
             try{
                 const data=JSON.parse(event.data);
@@ -606,7 +606,7 @@ class BinanceWebSocketManager {
     }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
-        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
+        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
             try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
                 // Actualizar header con markPrice si ticker aún no ha llegado
@@ -791,7 +791,7 @@ class BinanceWebSocketManager {
         let cleanInterval=validIntervals.includes(interval)?interval:'1h';
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
-        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
+        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@kline_${cleanInterval}`;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
@@ -2954,7 +2954,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         if (_symWS.has(sym)) return;   // ya conectado
 
         const ws = new WebSocket(
-            `wss://stream.binancefuture.com/ws/${sym.toLowerCase()}@ticker`
+            `wss://stream.binance.com/ws/${sym.toLowerCase()}@ticker`
         );
 
         ws.onopen = () => {
