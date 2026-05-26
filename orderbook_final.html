@@ -604,9 +604,9 @@ class BinanceWebSocketManager {
     }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@markPrice@1s`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
-            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();}}catch(err){}
+            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase() && this.symbol===wsManager?.symbol){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();}}catch(err){}
         });
     }
     connectDepth() {
@@ -888,6 +888,11 @@ async function initializeWebSockets() {
     // ── Limpiar gráfico completamente al cambiar de par ──
     markPriceFutures = 0;  // reset precio para evitar mitigaciones falsas
     lastPriceUpdate = 0;
+    // Reset header para evitar mostrar precio del par anterior
+    const _hdrPrc = document.getElementById('hdr-price');
+    const _hdrSym = document.getElementById('hdr-symbol');
+    if (_hdrPrc) _hdrPrc.textContent = '$0.00';
+    if (_hdrSym) _hdrSym.textContent = symbol;
     window._lastSymbolChange = Date.now();  // timestamp para bloquear mitigaciones temporalmente
     _isFirstLoad = true;  // resetear para que auto-fit al cargar nuevo par
     candlesData = [];
