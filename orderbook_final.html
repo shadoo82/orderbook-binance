@@ -579,12 +579,14 @@ class BinanceWebSocketManager {
     connectTicker() {
         const wsUrl = this.useSpot
             ? `wss://stream.binance.com:9443/ws/${this.symbol}@ticker`
-            : `wss://stream.binance.com/ws/${this.symbol}@ticker`;
+            : `wss://stream.binancefuture.com/ws/${this.symbol}@bookTicker`;
         this.createWebSocket('ticker',wsUrl,(event)=>{
             try{
                 const data=JSON.parse(event.data);
-                if(data.c!==undefined){
-                    let newPrice=Number(data.c);
+                // bookTicker usa 'b'(bid) y 'a'(ask), ticker 24h usa 'c'(close)
+                const rawPrice = data.c !== undefined ? data.c : data.b;
+                if(rawPrice!==undefined){
+                    let newPrice=Number(rawPrice);
                     const cambio24h=data.P?Number(data.P):0;
                     markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
                     if(smcEnabled)updateSMCCandles(newPrice);
@@ -606,7 +608,7 @@ class BinanceWebSocketManager {
     }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@markPrice@1s`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
             try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
                 // Actualizar header con markPrice si ticker aún no ha llegado
@@ -715,7 +717,7 @@ class BinanceWebSocketManager {
         }
 
         // ── 1. Conectar WebSocket y bufferizar hasta tener snapshot ──
-        const wsUrl = `wss://fstream.binance.com/ws/${this.symbol}@depth@100ms`;
+        const wsUrl = `wss://stream.binancefuture.com/ws/${this.symbol}@depth20@100ms`;
         this.createWebSocket('depth', wsUrl, (event) => {
                 window._lastDepthUpdate = Date.now();
             try {
@@ -791,7 +793,7 @@ class BinanceWebSocketManager {
         let cleanInterval=validIntervals.includes(interval)?interval:'1h';
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@kline_${cleanInterval}`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
@@ -2954,7 +2956,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         if (_symWS.has(sym)) return;   // ya conectado
 
         const ws = new WebSocket(
-            `wss://stream.binance.com/ws/${sym.toLowerCase()}@ticker`
+            `wss://stream.binancefuture.com/ws/${sym.toLowerCase()}@bookTicker`
         );
 
         ws.onopen = () => {
@@ -8089,6 +8091,38 @@ function startWatchlistMonitor() {
     setInterval(_updateBtn, 5000);
 })();
 </script>
+
+
+    <!-- Botón flotante guardar zonas -->
+    <button id="float-save-btn" 
+        onclick="window.saveAllInstZones && window.saveAllInstZones()"
+        title="Guardar zonas nuevas"
+        style="position:fixed;bottom:80px;right:15px;z-index:99999;
+               width:44px;height:44px;border-radius:50%;
+               background:rgba(0,200,100,0.9);border:2px solid #0c6;
+               color:#fff;font-size:18px;cursor:pointer;
+               display:flex;align-items:center;justify-content:center;
+               box-shadow:0 2px 8px rgba(0,0,0,0.4);
+               transition:all 0.2s;">💾</button>
+    <script>
+    // Actualizar badge del botón flotante con zonas nuevas
+    setInterval(() => {
+        const btn = document.getElementById('float-save-btn');
+        if (!btn) return;
+        const newZones = (window.institutionalZones || [])
+            .filter(z => !z.mitigated && !savedZonePrices?.has(Math.round(z.price * 100)));
+        if (newZones.length > 0) {
+            btn.style.background = 'rgba(255,165,0,0.95)';
+            btn.title = `Guardar ${newZones.length} zona(s) nueva(s)`;
+            btn.innerHTML = `💾<span style="position:absolute;top:-4px;right:-4px;background:#f24968;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;display:flex;align-items:center;justify-content:center;">${newZones.length}</span>`;
+            btn.style.position = 'fixed';
+        } else {
+            btn.style.background = 'rgba(0,200,100,0.7)';
+            btn.title = 'Sin zonas nuevas';
+            btn.innerHTML = '💾';
+        }
+    }, 3000);
+    </script>
 
 </body>
 </html>
