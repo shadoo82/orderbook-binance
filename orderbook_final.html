@@ -3024,6 +3024,34 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }
 
         console.log(`📡 Watchlist activo: ${[...activeSyms].join(', ')} (${activeSyms.size} pares)`);
+
+        // Cargar velas 1h para todos los pares activos (necesario para filtros Mxwll)
+        activeSyms.forEach(sym => {
+            if (sym === symbol) return; // par activo ya tiene candlesData
+            const cacheKey = `${sym}_1h`;
+            const now = Date.now();
+            // Solo cargar si no hay caché o tiene más de 15 min
+            if (!window._fiboCache[cacheKey] || now - window._fiboCache[cacheKey].ts > 15*60*1000) {
+                fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=100`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!Array.isArray(data)) return;
+                        window._fiboCache[cacheKey] = {
+                            candles: data.map(k => ({
+                                time:  k[0]/1000,
+                                open:  parseFloat(k[1]),
+                                high:  parseFloat(k[2]),
+                                low:   parseFloat(k[3]),
+                                close: parseFloat(k[4]),
+                            })),
+                            ts: Date.now()
+                        };
+                        console.log(`📊 Velas 1h cargadas: ${sym} (${window._fiboCache[cacheKey].candles.length} velas)`);
+                    })
+                    .catch(() => {});
+            }
+        });
+
         return activeSyms;
     }
 
@@ -3031,13 +3059,10 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
     function checkZonesForSymbol(sym, currentPrice) {
         const histKey = `inst_zones_history_${sym}`;
         let raw;
-        try { raw = localStorage.getItem(histKey); }
-        catch(e) { return; }
+        try { raw = localStorage.getItem(histKey); } catch(e) { return; }
         if (!raw) return;
-
         let history;
-        try { history = JSON.parse(raw); }
-        catch(e) { return; }
+        try { history = JSON.parse(raw); } catch(e) { return; }
 
         // Días a revisar (hoy + ayer + anteayer)
         const daysToCheck = [];
@@ -3052,121 +3077,190 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }
 
         let anyChange = false;
+        const now = Date.now();
+        const BLOCK_TIME = 4 * 60 * 60 * 1000;
+        const OPP_BLOCK  = 2 * 60 * 60 * 1000;
+        window._tgZoneTimestamps = window._tgZoneTimestamps || {};
+
+        // ══════════════════════════════════════════════════════════
+        // Calcular niveles Mxwll para este par
+        // Para pares del watchlist usamos el cache de velas (_fiboCache)
+        // Para el par activo usamos candlesData directamente
+        // ══════════════════════════════════════════════════════════
+        const candles = (sym === symbol && window.candlesData?.length >= 50)
+            ? window.candlesData
+            : (window._fiboCache?.[`${sym}_1h`]?.candles || null);
+
+        let goldLevels = [], counterFibs = 0;
+        let bearAOI = 0, bullAOI = Infinity;
+
+        if (candles && candles.length >= 50) {
+            // Gold Zone via getFibs (pivots extSens=25)
+            if (window.SMC && typeof window.SMC.getFibs === 'function') {
+                const fibData = window.SMC.getFibs(candles);
+                if (fibData && fibData.levels) {
+                    counterFibs = fibData.isBear ? 1 : -1;
+                    [0.382, 0.500, 0.618].forEach(lvl => {
+                        const gp = fibData.fib(lvl);
+                        if (gp && gp > 0) goldLevels.push({ price: gp, lvl });
+                    });
+                }
+            }
+            // AOI: high/low de últimas 50 velas con mechas
+            const r50 = candles.slice(-50);
+            bearAOI = Math.max(...r50.map(c => c.high));
+            bullAOI = Math.min(...r50.map(c => c.low));
+        }
+
+        const hasMxwllData = candles && candles.length >= 50 && goldLevels.length > 0;
+        const CONF_RADIUS  = 0.005; // 0.5%
+        const TOUCH_RADIUS = 0.002; // 0.2%
 
         daysToCheck.forEach(day => {
             (history[day] || []).forEach(zone => {
                 if (zone.mitigated || zone.status === 'mitigated') return;
-
-                const isAsk = zone.side === 'ask';
+                const isAsk  = zone.side === 'ask';
+                const isBid  = !isAsk;
                 const buffer = INST_CONFIG.mitigationPct;
 
-                // ── 1. MITIGACIÓN EXACTA ──
-                const mitigated = isAsk
+                // ── 1. MITIGACIÓN: precio toca la zona ──
+                const touched = isAsk
                     ? currentPrice >= zone.price * (1 - buffer)
                     : currentPrice <= zone.price * (1 + buffer);
 
-                if (mitigated) {
+                if (touched) {
                     zone.mitigated  = true;
                     zone.status     = 'mitigated';
                     zone.touchPrice = currentPrice;
                     zone.touchTime  = new Date().toISOString();
                     anyChange = true;
-
-                    console.log(`💥 [${sym}] ${zone.side.toUpperCase()} @ ${formatPrice(zone.price)} MITIGADA`);
-
-                    // Solo mostrar alerta si el precio de toque es coherente (max 15%)
-                    const _mitRatio = Math.abs(currentPrice - zone.price) / zone.price;
-                    if (_mitRatio <= 0.15) {
-                        showMitigationAlert({ ...zone }, currentPrice);
-                    } else {
-                        console.warn(`⚠️ Mitigación ignorada — precio incoherente: zona ${zone.price} vs precio ${currentPrice} (${(_mitRatio*100).toFixed(1)}%)`);
-                    }
+                    const touchRatio = Math.abs(currentPrice - zone.price) / zone.price;
+                    if (touchRatio <= 0.15) showMitigationAlert({ ...zone }, currentPrice);
                     if (sym !== symbol) _showCrossSymbolBanner(sym, zone, currentPrice, '💥 ZONA MITIGADA');
-
-                    // Telegram
-                    _sendMitigationTelegram(sym, zone, currentPrice);
-
                     return;
                 }
 
-                // ── 2. ALERTAS DE PROXIMIDAD (preventivas) ──
-                const distPct = Math.abs(currentPrice - zone.price) / zone.price;
+                // ── 2. ALERTA TELEGRAM con filtros Mxwll ──
+                if (!window.TG?.cfg?.enabled) return;
 
-                // Solo alertar si el precio se ACERCA (dirección correcta)
-                const approaching = isAsk
-                    ? currentPrice < zone.price   // precio subiendo hacia ASK
-                    : currentPrice > zone.price;  // precio bajando hacia BID
+                // Precio debe estar tocando la zona (0.2%)
+                const distToZone = Math.abs(currentPrice - zone.price) / zone.price;
+                if (distToZone > TOUCH_RADIUS) return;
 
-                if (!approaching) return;
+                // Dirección correcta
+                if (isBid  && currentPrice < zone.price) return;
+                if (!isBid && currentPrice > zone.price) return;
 
-                for (const level of PROXIMITY_LEVELS) {
-                    if (distPct <= level.pct) {
-                        const alertKey = `${sym}_${Math.round(zone.price)}_${level.key}`;
-                        const lastSent = _alertSent.get(alertKey) || 0;
+                // Tier mínimo INST o WHALE
+                const tierScore = zone.tier === 'WHALE' ? 3 : zone.tier === 'INST' ? 2 : 1;
+                if (tierScore < 2) return;
 
-                        const _now = Date.now();
-                        const _globalOk = (_now - _lastGlobalAlert) > GLOBAL_COOLDOWN_MS;
-                        if (_now - lastSent > ALERT_COOLDOWN_MS && _globalOk) {
-                            _alertSent.set(alertKey, _now);
-                            _lastGlobalAlert = _now;
+                // Anti-spam
+                const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+                const key    = `${Math.round(zone.price/bucket)}_${sym}`;
+                if (window._tgZoneTimestamps[key] && now - window._tgZoneTimestamps[key] < BLOCK_TIME) return;
+                const oppKey = `dir_${sym}_${isBid?'ask':'bid'}`;
+                if (window._tgZoneTimestamps[oppKey] && now - window._tgZoneTimestamps[oppKey] < OPP_BLOCK) return;
 
-                            console.log(`${level.emoji} [${sym}] Zona ${zone.side} @ ${formatPrice(zone.price)} — ${level.label}`);
+                // ── Filtros Mxwll (si hay datos de velas) ──
+                let isGoldZone = false, goldLvl = null;
+                let isAOI = false, hasFVG = false;
 
-                            // Alerta visual en pantalla
-                            _showProximityAlert(sym, zone, currentPrice, level);
+                if (hasMxwllData) {
+                    // counterFibs: bloquear dirección contraria a tendencia
+                    if (counterFibs === 1  && isBid)  return; // bajista → no LONG
+                    if (counterFibs === -1 && !isBid) return; // alcista → no SHORT
 
-                            // Al nivel INMINENTE (0.3%): señal completa de entrada
-                            if (level.key === 'imminent' && sym === symbol && typeof TradePanel !== 'undefined') {
-                                setTimeout(() => {
-                                    // Abrir panel de setup
-                                    TradePanel.openForZone(zone);
-
-                                    // Enviar señal COMPLETA de entrada solo si cumple condiciones
-                                    const evalTS  = evaluateZonePriority(zone, symbol);
-                                    const setup   = TradePanel.calculate(zone, currentPrice);
-                                    const tierIcon= zone.tier==='WHALE'?'🐋':zone.tier==='INST'?'🏛️':'📌';
-                                    const dir     = zone.side==='bid' ? '🟢 LONG (Soporte)' : '🔴 SHORT (Resistencia)';
-                                    const fp      = formatPrice;
-                                    const smc     = evalTS.hasConfluence ? `📐 SMC: ${evalTS.smcLevels?.join(' · ')||''}` : null;
-
-                                    // Solo enviar si WHALE o INST (≥60% prob) - RETAIL ignorado
-                                    if (evalTS.send && window.TG?.cfg?.enabled && zone.tier !== 'RETAIL') {
-                                        window.TG.send([
-                                            `🚨 SEÑAL DE ENTRADA`,
-                                            ``,
-                                            `Par: ${sym}`,
-                                            `${dir}`,
-                                            `Zona: ${fp(zone.price)} ${tierIcon} ${zone.tier}`,
-                                            `Volumen: ${formatUsdt(zone.totalUsdt)} USDT`,
-                                            smc,
-                                            ``,
-                                            `📊 TRADE SETUP:`,
-                                            `🎯 Entrada:  ${fp(setup.entry)}`,
-                                            `⛔ Stop:     ${fp(setup.sl)}  (-${setup.riskPct}%)`,
-                                            ``,
-                                            `✅ TP1 1:1 → ${fp(setup.tp1)}  (+${(Math.abs(setup.tp1-setup.entry)/setup.entry*100).toFixed(2)}%)`,
-                                            `✅ TP2 1:2 → ${fp(setup.tp2)}  (+${(Math.abs(setup.tp2-setup.entry)/setup.entry*100).toFixed(2)}%)`,
-                                            `✅ TP3 1:3 → ${fp(setup.tp3)}  (+${(Math.abs(setup.tp3-setup.entry)/setup.entry*100).toFixed(2)}%)`,
-                                            ``,
-                                            `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
-                                        ].filter(Boolean).join('\n')).catch(()=>{});
-                                        console.log('✈️ Señal de entrada enviada al Telegram');
-                                    }
-                                }, 300);
-                            }
-
-                            // Telegram de proximidad
-                            _sendProximityTelegram(sym, zone, currentPrice, level);
+                    // Gold Zone
+                    for (const g of goldLevels) {
+                        if (Math.abs(zone.price - g.price) / zone.price < CONF_RADIUS) {
+                            isGoldZone = true; goldLvl = g.lvl; break;
                         }
-                        break;  // solo el nivel más cercano
                     }
+
+                    // AOI
+                    isAOI = (isBid  && Math.abs(zone.price - bullAOI) / zone.price < CONF_RADIUS) ||
+                            (!isBid && Math.abs(zone.price - bearAOI) / zone.price < CONF_RADIUS);
+
+                    // REQUERIDO: debe estar en Gold Zone o AOI
+                    if (!isGoldZone && !isAOI) {
+                        console.log(`⏸️ [${sym}] Zona ${zone.price.toFixed(0)} — no está en GoldZone ni AOI`);
+                        return;
+                    }
+
+                    // FVG alineado
+                    const fvgs = window.detectFVGs ? window.detectFVGs(candles, currentPrice) : [];
+                    hasFVG = fvgs.some(f =>
+                        (isBid ? f.type === 'bull' : f.type === 'bear') &&
+                        Math.abs(f.mid - zone.price) / zone.price < CONF_RADIUS
+                    );
                 }
+
+                // ── Enviar alerta ──
+                window._tgZoneTimestamps[key] = now;
+                window._tgZoneTimestamps[`dir_${sym}_${zone.side}`] = now;
+
+                const dir    = isBid ? '🟢 LONG' : '🔴 SHORT';
+                const ti     = zone.tier==='WHALE' ? '🐋' : '🏛️';
+                const fp     = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+                const SL_PCT = 0.020;
+                const entry  = zone.price;
+                const sl     = isBid ? entry*(1-SL_PCT) : entry*(1+SL_PCT);
+                const risk   = Math.abs(entry-sl);
+                const tp1    = isBid ? entry+risk   : entry-risk;
+                const tp2    = isBid ? entry+risk*2 : entry-risk*2;
+                const tp3    = isBid ? entry+risk*3 : entry-risk*3;
+                const pct    = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
+                const dist   = (Math.abs(currentPrice-zone.price)/zone.price*100).toFixed(2);
+                const sess   = window.getTradingSession?.() || { name:'' };
+                const sEmoji = sess.name==='New York'?'🇺🇸':sess.name==='London'?'🇬🇧':sess.name==='Asia'?'🌏':'🕐';
+
+                const confLine = [
+                    isGoldZone ? `🥇 Gold Zone Fib ${goldLvl}` : null,
+                    isAOI      ? `📍 ${isBid?'Bull':'Bear'} AOI` : null,
+                    hasFVG     ? '📊 FVG alineado' : null,
+                ].filter(Boolean).join(' · ');
+
+                window.TG.send([
+                    `📍 ZONA INSTITUCIONAL — ${sym}`,
+                    ``,
+                    `${dir} ${ti} ${zone.tier}  ⏱️ 1h`,
+                    `Zona: ${fp(zone.price)}  (${formatUsdt(zone.totalUsdt||0)} USDT)`,
+                    confLine ? `${sEmoji} ${sess.name} · ${confLine}` : `${sEmoji} ${sess.name}`,
+                    `Dist: ${dist}%`,
+                    ``,
+                    `🎯 Entrada:       ${fp(entry)}`,
+                    `⛔ Stop Loss:     ${fp(sl)}  (−${(SL_PCT*100).toFixed(2)}%)`,
+                    ``,
+                    `✅ TP1 · 1:1   ${fp(tp1)}  +${pct(tp1)}%`,
+                    `✅ TP2 · 1:2   ${fp(tp2)}  +${pct(tp2)}%`,
+                    `✅ TP3 · 1:3   ${fp(tp3)}  +${pct(tp3)}%`,
+                    ``,
+                    `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
+                ].filter(l=>l!==null).join('\n')).then(() => {
+                    try {
+                        const log = JSON.parse(localStorage.getItem('tg_alerts_log') || '[]');
+                        log.push({
+                            id: Date.now(), pair: sym,
+                            date: new Date().toLocaleDateString('sv'),
+                            time: new Date().toLocaleTimeString('es-ES'),
+                            dir: isBid ? 'LONG' : 'SHORT',
+                            tier: zone.tier, zonePrice: zone.price,
+                            entry, sl, tp1, tp2, tp3,
+                            dist: parseFloat(dist), volume: zone.totalUsdt||0,
+                            isGoldZone, isAOI, hasFVG,
+                            result: 'PENDING', hitPrice: null, hitTime: null,
+                        });
+                        if (log.length > 500) log.splice(0, log.length-500);
+                        localStorage.setItem('tg_alerts_log', JSON.stringify(log));
+                        console.log(`✈️ [${sym}] ${dir} @ ${fp(zone.price)} | Gold:${isGoldZone} AOI:${isAOI} FVG:${hasFVG}`);
+                    } catch(e) {}
+                }).catch(()=>{});
             });
         });
 
         if (anyChange) {
             try { localStorage.setItem(histKey, JSON.stringify(history)); } catch(e) {}
-            // Refrescar UI
             if (sym === symbol) renderZonesPanel();
             const btOverlay = document.getElementById('bt-overlay');
             if (btOverlay && btOverlay.style.display !== 'none' && typeof BT !== 'undefined') {
@@ -6124,7 +6218,7 @@ const TradePanel = {
         const isBid  = zone.side === 'bid';
         // Entry = precio de la ZONA (donde está la orden institucional)
         const entry  = zone.price;
-        const SL_PCT = 0.015;
+        const SL_PCT = 0.020;
         const sl     = isBid ? entry * (1 - SL_PCT) : entry * (1 + SL_PCT);
         const risk   = Math.abs(entry - sl);
         const tp1    = isBid ? entry + risk      : entry - risk;
@@ -6550,219 +6644,203 @@ window._tpSlHit          = {};     // niveles ya alertados
 window._tgZoneTimestamps = window._tgZoneTimestamps || {};
 
 window._checkTradeSetupLevels = function(price) {
-    if (!window.TG?.cfg?.enabled) { console.log('🔕 TG desactivado'); return; }
-    // Fallback: usar precio del ticker si markPrice no disponible
+    if (!window.TG?.cfg?.enabled) return;
     const _price = price || window.markPriceFutures || window._lastTickerPrice || 0;
-    if (!_price || !window.institutionalZones?.length) {
-        console.log(`🔕 Sin precio o zonas: price=${_price} zones=${window.institutionalZones?.length||0}`);
-        return;
-    }
+    if (!_price || !window._obReady) return;
     price = _price;
-    if (!window._obReady) { console.log('⏳ OB no listo aún'); return; }
 
-    const session = window.getTradingSession();
-    console.log(`📊 Check TG: precio=${price} sesión=${session.name}(${session.quality}) zonas=${window.institutionalZones.length}`);
-    // Todas las sesiones activas generan alertas
-    // (Asia, London, NY, Dead Zone incluidas)
+    const candles = window.candlesData;
+    if (!candles || candles.length < 50) return;
 
-    const PROX_PCT   = 0.005; // 0.5%
-    const BLOCK_TIME = 4 * 60 * 60 * 1000; // 4 horas sin repetir
-    const now        = Date.now();
-    // WHALE (85%) + INST (65%) — ambas >=65% de probabilidad
-    const zones = window.institutionalZones.filter(z => !z.mitigated && (z.tier === 'WHALE' || z.tier === 'INST'));
-
-    // Zonas cercanas — validación direccional + persistencia + número redondo
-    const near = zones.filter(z => {
-        if (Math.abs(price - z.price) / z.price > PROX_PCT) return false;
-        const isBidZ = z.side === 'bid';
-        if (isBidZ  && price < z.price) return false;
-        if (!isBidZ && price > z.price) return false;
-        // Filtro de calidad: zona debe llevar ≥5 min en el libro
-        const persist = z.persistenceMin || 0;
-        if (persist < 5) return false;
-        return true;
-    });
-    if (!near.length) return;
-
-    // Seleccionar la MEJOR zona: WHALE > INST, luego mayor volumen
-    const tierScore = z => z.tier === 'WHALE' ? 2 : z.tier === 'INST' ? 1 : 0;
-    const zone = near.reduce((best, z) => {
-        const ts = tierScore(z), tb = tierScore(best);
-        if (ts > tb) return z;
-        if (ts === tb && (z.totalUsdt||0) > (best.totalUsdt||0)) return z;
-        return best;
-    }, near[0]);
-
-    // Bloquear dirección opuesta del mismo par por 2 horas
-    const pairDirKey = `dir_${symbol}_${zone.side}`;
-    const pairOppKey = `dir_${symbol}_${zone.side === 'bid' ? 'ask' : 'bid'}`;
-    const TWO_HOURS  = 7200000;
+    const now = Date.now();
+    const BLOCK_TIME   = 4 * 60 * 60 * 1000;  // 4h por zona
+    const OPP_BLOCK    = 2 * 60 * 60 * 1000;  // 2h dirección opuesta
+    const CONF_RADIUS  = 0.005;  // 0.5% — zona debe coincidir con nivel Mxwll
+    const TOUCH_RADIUS = 0.002;  // 0.2% — precio debe estar tocando la zona
     window._tgZoneTimestamps = window._tgZoneTimestamps || {};
-    if (window._tgZoneTimestamps[pairOppKey] &&
-        Date.now() - window._tgZoneTimestamps[pairOppKey] < TWO_HOURS) {
-        const oppTime = Math.round((Date.now()-window._tgZoneTimestamps[pairOppKey])/60000);
-        console.log(`⏸️ Dirección opuesta bloqueada: ${symbol} (hace ${oppTime}min)`);
-        return;
-    }
 
-    // Verificar estructura CHoCH/BoS (confirmación de dirección)
-    const struct = window.candlesData?.length > 20
-        ? window.detectStructure(window.candlesData, 50)
-        : null;
-    const isBidZone = zone.side === 'bid';
+    // ══════════════════════════════════════════════════════════════
+    // PASO 1: Calcular niveles Mxwll con el método EXACTO del script
+    // ══════════════════════════════════════════════════════════════
 
-    // ── Filtro de tendencia Mxwll counterFibs (extSens=25) ──
-    // Igual que Mxwll: último pivot HIGH = tendencia bajista (solo SHORT)
-    //                  último pivot LOW  = tendencia alcista (solo LONG)
-    if (window.candlesData && window.candlesData.length >= 30) {
-        const candles = window.candlesData;
-        const sens = 25; // extSens de Mxwll
-        let counterFibs = 0; // 1=bearish(HIGH pivot), -1=bullish(LOW pivot)
-        
-        // Buscar último pivot mayor con sensibilidad 25
-        for (let i = candles.length - sens - 1; i >= Math.max(0, candles.length - 150); i--) {
-            const slice = candles.slice(Math.max(0, i - sens), i + sens + 1);
-            const highs = slice.map(c => c.high);
-            const lows  = slice.map(c => c.low);
-            const isSwingH = candles[i].high === Math.max(...highs);
-            const isSwingL = candles[i].low  === Math.min(...lows);
-            if (isSwingH) { counterFibs = 1;  break; } // último fue HIGH → bajista
-            if (isSwingL) { counterFibs = -1; break; } // último fue LOW  → alcista
-        }
-        
-        if (counterFibs !== 0) {
-            if (isBidZone && counterFibs === 1) {
-                console.log(`⏸️ TG LONG bloqueado: counterFibs=1 (último pivot HIGH, tendencia bajista)`);
-                return;
-            }
-            if (!isBidZone && counterFibs === -1) {
-                console.log(`⏸️ TG SHORT bloqueado: counterFibs=-1 (último pivot LOW, tendencia alcista)`);
-                return;
-            }
+    // — Gold Zone via SMC.getFibs() (pivots extSens=25, igual que el script) —
+    let goldLevels = [];
+    let counterFibs = 0;
+    let fibData = null;
+
+    if (window.SMC && typeof window.SMC.getFibs === 'function') {
+        fibData = window.SMC.getFibs(candles);
+        if (fibData && fibData.levels) {
+            counterFibs = fibData.isBear ? 1 : -1;
+            // Gold Zone = Fib 0.382, 0.500, 0.618 del último swing real
+            [0.382, 0.500, 0.618].forEach(lvl => {
+                const gp = fibData.fib(lvl);
+                if (gp && gp > 0) goldLevels.push({ price: gp, lvl });
+            });
         }
     }
 
-    // CHoCH/BoS: solo bloquea si hay suficientes velas Y estructura contraria clara
-    if (struct?.structure) {
-        if (isBidZone  && struct.confirmesShort) { console.log('⏸️ TG LONG bloqueado: estructura bajista activa'); return; }
-        if (!isBidZone && struct.confirmsLong)   { console.log('⏸️ TG SHORT bloqueado: estructura alcista activa'); return; }
-    }
-
-    // ── Gold Zone: confluencia con Fib 0.5-0.618 ──
-    let isGoldZone = false;
-    if (window.candlesData && window.candlesData.length >= 30) {
-        const candles = window.candlesData;
+    // Fallback: si SMC no disponible, calcular pivots manualmente
+    if (!goldLevels.length) {
         const sens = 25;
-        let swingH = 0, swingL = Infinity;
-        for (let i = 0; i < Math.min(candles.length, 100); i++) {
-            swingH = Math.max(swingH, candles[candles.length - 1 - i].high);
-            swingL = Math.min(swingL, candles[candles.length - 1 - i].low);
+        let lastH = 0, lastHi = -1, lastL = Infinity, lastLi = -1, lastType = 0;
+        for (let i = candles.length - sens - 1; i >= Math.max(0, candles.length - 200); i--) {
+            const slice = candles.slice(Math.max(0, i-sens), i+sens+1);
+            if (candles[i].high === Math.max(...slice.map(c=>c.high))) {
+                lastH = candles[i].high; lastHi = i; lastType = 1; break;
+            }
+            if (candles[i].low === Math.min(...slice.map(c=>c.low))) {
+                lastL = candles[i].low; lastLi = i; lastType = -1; break;
+            }
         }
-        if (swingH > swingL) {
-            const range = swingH - swingL;
-            const fib50  = swingL + range * 0.5;
-            const fib618 = swingL + range * 0.618;
-            const fib382 = swingL + range * 0.382;
-            const zonePct = Math.abs(zone.price - fib50) / zone.price;
-            const zone618 = Math.abs(zone.price - fib618) / zone.price;
-            const zone382 = Math.abs(zone.price - fib382) / zone.price;
-            isGoldZone = zonePct < 0.005 || zone618 < 0.005 || zone382 < 0.005;
+        counterFibs = lastType;
+        // Buscar el rango del swing
+        if (lastType === 1 && lastHi >= 0) {
+            let y2 = Infinity;
+            for (let i = lastHi; i < candles.length; i++) y2 = Math.min(y2, candles[i].low);
+            const sub = lastH - y2;
+            [0.382,0.500,0.618].forEach(lvl => goldLevels.push({ price: sub*lvl + y2, lvl }));
+        } else if (lastType === -1 && lastLi >= 0) {
+            let y2 = -Infinity;
+            for (let i = lastLi; i < candles.length; i++) y2 = Math.max(y2, candles[i].high);
+            const sub = lastL - y2;
+            [0.382,0.500,0.618].forEach(lvl => goldLevels.push({ price: sub*lvl + y2, lvl }));
         }
     }
-    if (struct) console.log(`📐 Estructura: ${struct.structure?.label || 'neutral'}`);
 
-    // Triple confluencia: FVG + AOI (mínimo 2 de 3 factores)
-    const triple = window.checkTripleConfluence(zone.price, zone.side, price, window.candlesData);
-    if (triple.score < 2) {
-        console.log(`⏸️ TG bloqueado: confluencia insuficiente (${triple.score}/3) - ${triple.factors.join(', ')}`);
-        return;
-    }
-    console.log(`✅ Triple confluencia: ${triple.score}/3 — ${triple.factors.join(' + ')}`)
+    // — AOI: high/low REAL de últimas 50 velas (mechas completas, igual que Mxwll) —
+    const recent50 = candles.slice(-50);
+    const bearAOI  = Math.max(...recent50.map(c => c.high)); // max de 50 velas = resistencia
+    const bullAOI  = Math.min(...recent50.map(c => c.low));  // min de 50 velas = soporte
 
-    // Clave agrupada: redondear al 0.5% del precio para tratar zonas cercanas como una sola
-    const _bucket = zone.price > 10000 ? 500   // BTC: grupos de 500
-                  : zone.price > 1000  ? 50    // ETH: grupos de 50
-                  : zone.price > 100   ? 5     // SOL: grupos de 5
-                  : 1;
-    const keyBase = `${Math.round(zone.price/_bucket)}_${symbol}`;
+    // — FVGs no llenados —
+    const fvgs = window.detectFVGs ? window.detectFVGs(candles, price) : [];
 
-    // Bloqueo de 4 horas — NO re-alertar aunque el precio siga cerca
-    if (_tgZoneTimestamps[keyBase] && now - _tgZoneTimestamps[keyBase] < BLOCK_TIME) return;
-    window._tgZoneTimestamps[keyBase] = now;
+    console.log(`📊 Mxwll Check | counterFibs=${counterFibs} | GoldZone=${goldLevels.map(g=>g.price.toFixed(1)).join('/')} | AOI=${bullAOI.toFixed(1)}/${bearAOI.toFixed(1)} | precio=${price.toFixed(2)}`);
 
-    // Enviar Telegram con setup completo
-    if (window.TradePanel) {
-        try {
-            const setup = TradePanel.calculate(zone, price);
-            if (!setup) return;
-            const { entry, sl, tp1, tp2, tp3, riskPct } = setup;
-            const isBid = zone.side === 'bid';
-            const ti  = zone.tier==='WHALE'?'🐋':zone.tier==='INST'?'🏛️':'📌';
-            const dir = isBid ? '🟢 LONG' : '🔴 SHORT';
-            const fp  = formatPrice;
-            const pct = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
-            const dist = (Math.abs(price-zone.price)/zone.price*100).toFixed(2);
-            const now = new Date().toLocaleTimeString('es-ES');
-            // Calidad de zona
-            const persistMin = zone.persistenceMin || 0;
-            const session = window.getTradingSession();
-            const sessionEmoji = session.name === 'New York' ? '🇺🇸' : session.name === 'London' ? '🇬🇧' : '🌏';
-            const structLabel = struct?.structure ? `📐 ${struct.structure.label}` : '';
-            const tripleC = window.checkTripleConfluence(zone.price, zone.side, price, window.candlesData);
-            const confLine = tripleC.factors.slice(1).join(' + '); // Skip primer factor (zona inst)
-            const qualityLine = [
-                persistMin >= 15  ? `⏱️ ${persistMin}m en libro` : '',
-                zone.isRoundNumber ? '🎯 Redondo' : '',
-                `${sessionEmoji} ${session.name}`,
-                structLabel,
-                confLine ? `⚡ ${confLine}` : '',
-                isGoldZone ? '🥇 Gold Zone' : '',
-            ].filter(Boolean).join(' · ');
+    // ══════════════════════════════════════════════════════════════
+    // PASO 2: Para cada zona institucional, verificar si está
+    //         EN un nivel Mxwll (Gold Zone o AOI)
+    // ══════════════════════════════════════════════════════════════
+    const zones = (window.institutionalZones || [])
+        .filter(z => !z.mitigated && (z.tier === 'WHALE' || z.tier === 'INST'))
+        .sort((a,b) => (b.totalUsdt||0) - (a.totalUsdt||0)); // más grande primero
 
-            window.TG.send([
-                `📍 ZONA INSTITUCIONAL — ${symbol}`,``,
-                `${dir}  ${ti} ${zone.tier}  ⏱️ ${currentInterval}`,
-                `Zona:  ${fp(zone.price)}  (${formatUsdt(zone.totalUsdt)} USDT)`,
-                qualityLine ? qualityLine : null,
-                `Dist:  ${dist}%`,``,
-                `🎯 Entrada:       ${fp(entry)}`,
-                `⛔ Stop Loss:     ${fp(sl)}  (−${riskPct}%)`,``,
-                `✅ TP1 · 1:1   ${fp(tp1)}  +${pct(tp1)}%`,
-                `✅ TP2 · 1:2   ${fp(tp2)}  +${pct(tp2)}%`,
-                `✅ TP3 · 1:3   ${fp(tp3)}  +${pct(tp3)}%`,``,
-                `🕐 ${now}`,
-            ].filter(l => l !== null).join('\n')).then(() => {
-                // Guardar alerta para tracking de efectividad
-                try {
-                    const alertRecord = {
-                        id:        Date.now(),
-                        pair:      symbol,
-                        date:      new Date().toLocaleDateString('sv'),
-                        time:      new Date().toLocaleTimeString('es-ES'),
-                        dir:       isBid ? 'LONG' : 'SHORT',
-                        tier:      zone.tier,
-                        zonePrice: zone.price,
-                        entry, sl, tp1, tp2, tp3,
-                        dist:      parseFloat(dist),
-                        volume:    zone.totalUsdt || 0,
-                        result:    'PENDING',
-                        hitPrice:  null,
-                        hitTime:   null,
-                    };
-                    const alertKey = 'tg_alerts_log';
-                    const existing = JSON.parse(localStorage.getItem(alertKey) || '[]');
-                    existing.push(alertRecord);
-                    if (existing.length > 500) existing.splice(0, existing.length - 500);
-                    localStorage.setItem(alertKey, JSON.stringify(existing));
-                    // Registrar dirección del par para bloquear opuesta
-                    window._tgZoneTimestamps[`dir_${symbol}_${zone.side}`] = Date.now();
-                    console.log(`📝 Alerta registrada: ${symbol} ${isBid?'LONG':'SHORT'} @ ${fp(zone.price)}`);
-                } catch(e2) {}
-            }).catch(()=>{});
-        } catch(e) {}
+    for (const zone of zones) {
+        const isBid = zone.side === 'bid';
+
+        // 1. Filtro counterFibs: solo LONG si último pivot fue LOW, solo SHORT si fue HIGH
+        if (counterFibs === 1  && isBid)  { continue; } // bajista → no LONG
+        if (counterFibs === -1 && !isBid) { continue; } // alcista → no SHORT
+
+        // 2. Precio debe estar tocando la zona AHORA (0.2%)
+        const distToZone = Math.abs(price - zone.price) / zone.price;
+        if (distToZone > TOUCH_RADIUS) continue;
+
+        // 3. Dirección correcta: precio llega a la zona desde el lado correcto
+        if (isBid  && price < zone.price) continue; // bid: precio viene de arriba
+        if (!isBid && price > zone.price) continue; // ask: precio viene de abajo
+
+        // 4. Persistencia ≥ 5 min en el libro
+        if ((zone.persistenceMin || 0) < 5) continue;
+
+        // 5. ¿La zona está en Gold Zone o AOI? (REQUERIDO)
+        let isGoldZone = false, goldLvl = null;
+        for (const g of goldLevels) {
+            if (Math.abs(zone.price - g.price) / zone.price < CONF_RADIUS) {
+                isGoldZone = true; goldLvl = g.lvl; break;
+            }
+        }
+
+        const isAOI = (isBid  && Math.abs(zone.price - bullAOI) / zone.price < CONF_RADIUS) ||
+                      (!isBid && Math.abs(zone.price - bearAOI) / zone.price < CONF_RADIUS);
+
+        // DEBE estar en Gold Zone O en AOI — si no, ignorar
+        if (!isGoldZone && !isAOI) {
+            console.log(`⏸️ Zona ${zone.price.toFixed(0)} descartada — no coincide con GoldZone ni AOI del gráfico`);
+            continue;
+        }
+
+        // 6. FVG alineado (bonus, no requerido)
+        const hasFVG = fvgs.some(f =>
+            (isBid ? f.type === 'bull' : f.type === 'bear') &&
+            Math.abs(f.mid - zone.price) / zone.price < CONF_RADIUS
+        );
+
+        // 7. Anti-spam: bloqueo 4h por zona
+        const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+        const key    = `${Math.round(zone.price/bucket)}_${symbol}`;
+        if (window._tgZoneTimestamps[key] && now - window._tgZoneTimestamps[key] < BLOCK_TIME) continue;
+
+        // 8. Bloquear dirección opuesta 2h
+        const oppKey = `dir_${symbol}_${isBid?'ask':'bid'}`;
+        if (window._tgZoneTimestamps[oppKey] && now - window._tgZoneTimestamps[oppKey] < OPP_BLOCK) continue;
+
+        // ══════════════════════════════════════════════════════════════
+        // PASO 3: Enviar alerta — precio está EN zona Mxwll confirmada
+        // ══════════════════════════════════════════════════════════════
+        window._tgZoneTimestamps[key]    = now;
+        window._tgZoneTimestamps[`dir_${symbol}_${zone.side}`] = now;
+
+        if (!window.TradePanel) break;
+        const setup = window.TradePanel.calculate(zone, price);
+        if (!setup) break;
+
+        const { entry, sl, tp1, tp2, tp3, riskPct } = setup;
+        const dir    = isBid ? '🟢 LONG' : '🔴 SHORT';
+        const ti     = zone.tier === 'WHALE' ? '🐋' : '🏛️';
+        const fp     = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+        const pct    = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
+        const dist   = (Math.abs(price-zone.price)/zone.price*100).toFixed(2);
+        const sess   = window.getTradingSession?.() || { name:'' };
+        const sEmoji = sess.name==='New York'?'🇺🇸':sess.name==='London'?'🇬🇧':sess.name==='Asia'?'🌏':'🕐';
+        const persist = zone.persistenceMin || 0;
+
+        const confLine = [
+            isGoldZone ? `🥇 Gold Zone Fib ${goldLvl}` : null,
+            isAOI      ? `📍 ${isBid?'Bull':'Bear'} AOI` : null,
+            hasFVG     ? '📊 FVG alineado' : null,
+        ].filter(Boolean).join(' · ');
+
+        window.TG.send([
+            `📍 ZONA INSTITUCIONAL — ${symbol}`,
+            ``,
+            `${dir} ${ti} ${zone.tier}  ⏱️ ${currentInterval}`,
+            `Zona: ${fp(zone.price)}  (${formatUsdt(zone.totalUsdt)} USDT)`,
+            `⏱️ ${persist}m en libro · ${sEmoji} ${sess.name} · ${confLine}`,
+            `Dist: ${dist}%`,
+            ``,
+            `🎯 Entrada:       ${fp(entry)}`,
+            `⛔ Stop Loss:     ${fp(sl)}  (−${riskPct}%)`,
+            ``,
+            `✅ TP1 · 1:1   ${fp(tp1)}  +${pct(tp1)}%`,
+            `✅ TP2 · 1:2   ${fp(tp2)}  +${pct(tp2)}%`,
+            `✅ TP3 · 1:3   ${fp(tp3)}  +${pct(tp3)}%`,
+            ``,
+            `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
+        ].filter(l=>l!==null).join('\n')).then(() => {
+            try {
+                const log = JSON.parse(localStorage.getItem('tg_alerts_log') || '[]');
+                log.push({
+                    id: Date.now(), pair: symbol,
+                    date: new Date().toLocaleDateString('sv'),
+                    time: new Date().toLocaleTimeString('es-ES'),
+                    dir: isBid ? 'LONG' : 'SHORT',
+                    tier: zone.tier, zonePrice: zone.price,
+                    entry, sl, tp1, tp2, tp3,
+                    dist: parseFloat(dist), volume: zone.totalUsdt || 0,
+                    isGoldZone, isAOI, hasFVG,
+                    result: 'PENDING', hitPrice: null, hitTime: null,
+                });
+                if (log.length > 500) log.splice(0, log.length - 500);
+                localStorage.setItem('tg_alerts_log', JSON.stringify(log));
+                console.log(`✈️ TG: ${symbol} ${dir} @ ${fp(zone.price)} | Gold:${isGoldZone}(${goldLvl}) AOI:${isAOI} FVG:${hasFVG}`);
+            } catch(e) {}
+        }).catch(()=>{});
+
+        break; // UNA sola alerta por ciclo
     }
 };
-
 
 window.setActiveTradeSetup = function(setup) {
     window._activeTradeSetup = setup;
@@ -7583,8 +7661,9 @@ window.detectFVGs = function(candles, price) {
 window.detectAOI = function(candles) {
     if (!candles || candles.length < 50) return null;
     const recent = candles.slice(-50);
-    const maxH = Math.max(...recent.map(c => Math.max(c.close, c.open)));
-    const minL = Math.min(...recent.map(c => Math.min(c.close, c.open)));
+    // Mxwll Suite: usa high/low reales (mechas completas), no cuerpos
+    const maxH = Math.max(...recent.map(c => c.high));
+    const minL = Math.min(...recent.map(c => c.low));
     return { bearAOI: maxH, bullAOI: minL }; // bearAOI=SHORT zone, bullAOI=LONG zone
 };
 
