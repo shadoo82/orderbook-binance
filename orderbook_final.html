@@ -579,12 +579,14 @@ class BinanceWebSocketManager {
     connectTicker() {
         const wsUrl = this.useSpot
             ? `wss://stream.binance.com:9443/ws/${this.symbol}@ticker`
-            : `wss://stream.binance.com/ws/${this.symbol}@ticker`;
+            : `wss://stream.binancefuture.com/ws/${this.symbol}@bookTicker`;
         this.createWebSocket('ticker',wsUrl,(event)=>{
             try{
                 const data=JSON.parse(event.data);
-                if(data.c!==undefined){
-                    let newPrice=Number(data.c);
+                // bookTicker usa 'b'(bid) y 'a'(ask), ticker 24h usa 'c'(close)
+                const rawPrice = data.c !== undefined ? data.c : data.b;
+                if(rawPrice!==undefined){
+                    let newPrice=Number(rawPrice);
                     const cambio24h=data.P?Number(data.P):0;
                     markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
                     if(smcEnabled)updateSMCCandles(newPrice);
@@ -606,7 +608,7 @@ class BinanceWebSocketManager {
     }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@markPrice@1s`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
             try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
                 // Actualizar header con markPrice si ticker aún no ha llegado
@@ -638,7 +640,7 @@ class BinanceWebSocketManager {
 
         // ── Calcular las top-N por USDT y actualizar las variables globales ──
         function rebuildTopOrders(now) {
-            const TOP = 20;
+            const TOP = 100;
 
             // ASKS: ordenar por precio ASC, tomar los TOP más grandes en USDT
             const asksArr = [];
@@ -715,7 +717,7 @@ class BinanceWebSocketManager {
         }
 
         // ── 1. Conectar WebSocket y bufferizar hasta tener snapshot ──
-        const wsUrl = `wss://fstream.binance.com/ws/${this.symbol}@depth@100ms`;
+        const wsUrl = `wss://stream.binancefuture.com/ws/${this.symbol}@depth20@100ms`;
         this.createWebSocket('depth', wsUrl, (event) => {
                 window._lastDepthUpdate = Date.now();
             try {
@@ -791,7 +793,7 @@ class BinanceWebSocketManager {
         let cleanInterval=validIntervals.includes(interval)?interval:'1h';
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@kline_${cleanInterval}`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
@@ -1990,7 +1992,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
         if (price >= 10000) {
             // BTC range
-            return { minUsdtToShow: 5_000_000, institutionalMin: 20_000_000, whaleMin: 100_000_000 };
+            return { minUsdtToShow: 1_000_000, institutionalMin: 5_000_000, whaleMin: 20_000_000 };
         } else if (price >= 1000) {
             // ETH range
             return { minUsdtToShow: 1_000_000, institutionalMin: 5_000_000,  whaleMin:  25_000_000 };
@@ -2954,7 +2956,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         if (_symWS.has(sym)) return;   // ya conectado
 
         const ws = new WebSocket(
-            `wss://stream.binance.com/ws/${sym.toLowerCase()}@ticker`
+            `wss://stream.binancefuture.com/ws/${sym.toLowerCase()}@bookTicker`
         );
 
         ws.onopen = () => {
@@ -8089,6 +8091,19 @@ function startWatchlistMonitor() {
     setInterval(_updateBtn, 5000);
 })();
 </script>
+
+
+
+
+    <!-- Botón flotante guardar zonas -->
+    <button id="float-save-btn"
+        onclick="window.saveAllInstZones && window.saveAllInstZones()"
+        title="Guardar zonas nuevas"
+        style="position:fixed;bottom:80px;right:15px;z-index:99999;
+               width:44px;height:44px;border-radius:50%;
+               background:rgba(0,200,100,0.85);border:2px solid #0c6;
+               color:#fff;font-size:20px;cursor:pointer;
+               box-shadow:0 2px 8px rgba(0,0,0,0.4);">💾</button>
 
 </body>
 </html>
