@@ -706,7 +706,7 @@ class BinanceWebSocketManager {
         }
 
         // ── 1. Conectar WebSocket y bufferizar hasta tener snapshot ──
-        const wsUrl = `wss://stream.binancefuture.com/ws/${this.symbol}@depth20@100ms`;
+        const wsUrl = `wss://fstream.binance.com/ws/${this.symbol}@depth@100ms`;
         this.createWebSocket('depth', wsUrl, (event) => {
                 window._lastDepthUpdate = Date.now();
             try {
