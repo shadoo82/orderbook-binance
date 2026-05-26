@@ -451,7 +451,9 @@ function calculateRealTimeChange(){return 0;}
 // Cargar símbolo desde localStorage (compatible con file://)
 let symbol = "BTCUSDT";
 try {
-    symbol = localStorage.getItem('last_symbol') || "BTCUSDT";
+    const saved = localStorage.getItem('last_symbol');
+    const validPairs = ['BTCUSDT','ETHUSDT','SOLUSDT','XRPUSDT','BNBUSDT','HYPEUSDT','TACUSDT'];
+    if (saved && validPairs.includes(saved)) symbol = saved;
 } catch(e) { symbol = "BTCUSDT"; }
 
 let markPriceFutures = 0;
@@ -606,7 +608,14 @@ class BinanceWebSocketManager {
         if (this.useSpot) return;  // Spot no tiene markPrice
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
-            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();}}catch(err){}
+            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
+                // Actualizar header con markPrice si ticker aún no ha llegado
+                const _hdrSym=document.getElementById('hdr-symbol');
+                const _hdrPrc=document.getElementById('hdr-price');
+                if(_hdrSym) _hdrSym.textContent=symbol;
+                if(_hdrPrc && (_hdrPrc.textContent==='$0.00'||_hdrPrc.textContent==='Cargando...')){
+                    _hdrPrc.textContent='$'+markPriceFutures.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+                }}}catch(err){}
         });
     }
     connectDepth() {
@@ -8031,7 +8040,9 @@ function startWatchlistMonitor() {
                 if (!data || data.error) return;
                 let count = 0;
                 Object.keys(data).forEach(k => {
-                    if (k && data[k] !== null) { localStorage.setItem(k, data[k]); count++; }
+                    if (k && data[k] !== null && k !== 'last_symbol') {
+                        localStorage.setItem(k, data[k]); count++;
+                    }
                 });
                 console.log(`✅ Firebase pull completo: ${count} claves`);
                 if (typeof window.updateFirebaseBtnState === 'function') window.updateFirebaseBtnState();
