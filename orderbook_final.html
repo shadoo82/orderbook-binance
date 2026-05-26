@@ -3026,8 +3026,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     .some(z => !z.mitigated && z.status !== 'mitigated');
                 if (hasPending) {
                     activeSyms.add(sym);
-                    // connectSymbolTicker desactivado — startWatchlistMonitor maneja esto
-                    // if (!_symWS.has(sym)) connectSymbolTicker(sym);
+                    if (!_symWS.has(sym)) connectSymbolTicker(sym);
                 }
             } catch(e) {}
         }
