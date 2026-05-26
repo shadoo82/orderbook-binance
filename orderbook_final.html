@@ -6676,7 +6676,7 @@ window._checkTradeSetupLevels = function(price) {
     const now = Date.now();
     const BLOCK_TIME   = 4 * 60 * 60 * 1000;
     const OPP_BLOCK    = 2 * 60 * 60 * 1000;
-    const CONF_RADIUS  = 0.003;  // 0.3% coincidencia exacta con nivel Mxwll
+    const CONF_RADIUS  = 0.004;  // 0.4% coincidencia con nivel Mxwll
     const WARN_RADIUS  = 0.005;  // 0.5% alerta previa
     const TOUCH_RADIUS = 0.002;  // 0.2% tocando zona
     window._tgZoneTimestamps = window._tgZoneTimestamps || {};
@@ -6723,7 +6723,7 @@ window._checkTradeSetupLevels = function(price) {
         if (!isBid && price > zone.price) continue;
 
         // Persistencia ≥5 min
-        if ((zone.persistenceMin || 0) < 5) continue;
+        if ((zone.persistenceMin || 0) < 3) continue;
 
         // ── Verificar que zona está en nivel Mxwll correcto según dirección ──
         let isGoldZone = false, goldLvl = null;
