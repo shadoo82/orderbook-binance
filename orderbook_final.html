@@ -3117,7 +3117,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         const TOUCH_RADIUS = 0.002; // 🚨 entrada a 0.2%
         // Guard anti-duplicado: no procesar el mismo par+precio dentro de 2 segundos
         const _dedupKey = `dedup_${sym}_${Math.round(currentPrice*100)}`;
-        if (window._tgZoneTimestamps[_dedupKey] && now - window._tgZoneTimestamps[_dedupKey] < 2000) return;
+        if (window._tgZoneTimestamps[_dedupKey] && now - window._tgZoneTimestamps[_dedupKey] < 30000) return;
         window._tgZoneTimestamps[_dedupKey] = now;
         const SL_PCT = 0.020;       // SL 2%
         window._tgZoneTimestamps = window._tgZoneTimestamps || {};
@@ -3215,7 +3215,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 }
 
                 const distToZone = Math.abs(currentPrice - zone.price) / zone.price;
-                const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+                const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
                 const keyEntry = `entry_${Math.round(zone.price/bucket)}_${sym}`;
                 const keyWarn  = `warn_${Math.round(zone.price/bucket)}_${sym}`;
 
@@ -6790,7 +6790,7 @@ window._checkTradeSetupLevels = function(price) {
         );
 
         // Anti-spam
-        const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+        const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
         const keyEntry = `entry_${Math.round(zone.price/bucket)}_${symbol}`;
         const keyWarn  = `warn_${Math.round(zone.price/bucket)}_${symbol}`;
         const oppKey   = `dir_${symbol}_${isBid?'ask':'bid'}`;
@@ -7459,7 +7459,7 @@ window.checkFiboConfluence = function() {
     }
 
         // Bloqueo 6 horas para confluencia (más largo que alertas normales)
-        const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+        const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
         const key    = `fibo_conf_${Math.round(zone.price/bucket)}_${symbol}`;
         const BLOCK  = 6 * 3600 * 1000;
         const now    = Date.now();
