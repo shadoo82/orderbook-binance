@@ -3216,8 +3216,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
                 const distToZone = Math.abs(currentPrice - zone.price) / zone.price;
                 const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
-                const keyEntry = `entry_${Math.round(zone.price/bucket)}_${sym}`;
-                const keyWarn  = `warn_${Math.round(zone.price/bucket)}_${sym}`;
+                const keyEntry = `entry_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${sym}`;
+                const keyWarn  = `warn_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${sym}`;
 
                 const dir    = isBid ? '🟢 LONG' : '🔴 SHORT';
                 const ti     = zone.tier==='WHALE' ? '🐋' : '🏛️';
@@ -6791,8 +6791,8 @@ window._checkTradeSetupLevels = function(price) {
 
         // Anti-spam
         const bucket  = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
-        const keyEntry = `entry_${Math.round(zone.price/bucket)}_${symbol}`;
-        const keyWarn  = `warn_${Math.round(zone.price/bucket)}_${symbol}`;
+        const keyEntry = `entry_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${symbol}`;
+        const keyWarn  = `warn_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${symbol}`;
         const oppKey   = `dir_${symbol}_${isBid?'ask':'bid'}`;
         if (window._tgZoneTimestamps[oppKey] && now - window._tgZoneTimestamps[oppKey] < OPP_BLOCK) continue;
 
@@ -7460,7 +7460,7 @@ window.checkFiboConfluence = function() {
 
         // Bloqueo 6 horas para confluencia (más largo que alertas normales)
         const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
-        const key    = `fibo_conf_${Math.round(zone.price/bucket)}_${symbol}`;
+        const key    = `fibo_conf_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${symbol}`;
         const BLOCK  = 6 * 3600 * 1000;
         const now    = Date.now();
 
