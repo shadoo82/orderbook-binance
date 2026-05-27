@@ -3164,8 +3164,10 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         const hasMxwllData = candles && candles.length >= 50 && goldLevels.length > 0;
         const fvgs = (hasMxwllData && window.detectFVGs) ? window.detectFVGs(candles, currentPrice) : [];
 
+        let _pairAlerted = false; // solo UNA alerta por ejecución
         daysToCheck.forEach(day => {
             (history[day] || []).forEach(zone => {
+                if (_pairAlerted) return; // ya se mandó una alerta este ciclo
                 if (zone.mitigated || zone.status === 'mitigated') return;
                 const isAsk = zone.side === 'ask';
                 const isBid = !isAsk;
