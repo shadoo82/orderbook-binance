@@ -3287,7 +3287,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                                 isGoldZone, isAOI, hasFVG, result:'PENDING', hitPrice:null, hitTime:null });
                             if (log.length > 500) log.splice(0, log.length-500);
                             localStorage.setItem('tg_alerts_log', JSON.stringify(log));
-                            console.log(`🚨 ENTRADA [${sym}] ${dir} @ ${fp(zone.price)}`);
+                            window._tgZoneTimestamps[`pair_cool_${sym}`] = now;
+                    console.log(`🚨 ENTRADA [${sym}] ${dir} @ ${fp(zone.price)}`);
                         } catch(e) {}
                     }).catch(()=>{});
                     return;
@@ -3314,6 +3315,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                         `✅ TP3   ${fp(tp3)}  +${pct(tp3)}%`,``,
                         `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
                     ].filter(l=>l!==null).join('\n')).catch(()=>{});
+                    window._tgZoneTimestamps[`pair_cool_${sym}`] = now;
                     console.log(`⚠️ PREVIA [${sym}] ${dir} @ ${fp(zone.price)} — dist ${dist}%`);
                 }
             });
@@ -8219,6 +8221,7 @@ function startWatchlistMonitor() {
     setInterval(_updateBtn, 5000);
 })();
 </script>
+
 
 
 
