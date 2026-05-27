@@ -790,7 +790,7 @@ class BinanceWebSocketManager {
         let cleanInterval=validIntervals.includes(interval)?interval:'1h';
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
-        const wsUrl=`wss://stream.binance.com/ws/${this.symbol}@kline_${cleanInterval}`;
+        const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
@@ -835,7 +835,16 @@ class BinanceWebSocketManager {
                     }
                 }, 3 * 60 * 1000);  // cada 3 minutos
                 this.pingIntervals.set(type,pingInterval);
-                if(type==='kline'){setTimeout(()=>{loadHistoricalKlines().catch(err=>console.error('Error cargando histórico:',err));},1000);}
+                if(type==='kline'){
+                    if(!window._klineLoading){
+                        window._klineLoading=true;
+                        setTimeout(()=>{
+                            loadHistoricalKlines()
+                                .catch(err=>console.error('Error cargando histórico:',err))
+                                .finally(()=>{window._klineLoading=false;});
+                        },1000);
+                    }
+                }
             };
             ws.onmessage=(event)=>{
                 if(event.data==='pong'||event.data==='ping') return;
