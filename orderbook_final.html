@@ -2747,7 +2747,9 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
                 <!-- FILA 5: botones -->
                 <div style="display:flex;gap:6px;">
-                    <button onclick="window.saveInstZoneByPrice(${z.price})"
+                    ${z.tier === 'RETAIL' ? 
+                        `<div style="flex:1;padding:5px 0;text-align:center;font-size:10px;color:#555;border:1px solid #333;border-radius:4px;">📌 RETAIL — no guardable</div>` :
+                        `<button onclick="window.saveInstZoneByPrice(${z.price})"
                             ${isMitigated?'disabled':''}
                             style="flex:1;padding:5px 0;border-radius:4px;font-size:10px;
                                    cursor:${isMitigated?'default':'pointer'};transition:all 0.2s;
@@ -2755,8 +2757,9 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                                    border:1px solid ${isMitigated?'#444':isSaved?'#ffaa00':'#2196f3'};
                                    color:${isMitigated?'#555':isSaved?'#ffaa00':'#90caf9'};
                                    opacity:${isMitigated?'0.4':'1'};">
-                        ${isMitigated?'💥 Mitigada':isSaved?'✅ '+savedInfo.time:'💾 Guardar'}
-                    </button>
+                            ${isMitigated?'💥 Mitigada':isSaved?'✅ '+savedInfo.time:'💾 Guardar'}
+                        </button>`
+                    }
                     <button onclick="window.drawZoneByPrice(${z.price})"
                             style="flex:1;padding:5px 0;border-radius:4px;font-size:10px;
                                    cursor:pointer;transition:all 0.2s;
@@ -7181,9 +7184,16 @@ function init() {
             r2.style.cssText = 'color:#999;font-size:11px;margin-bottom:9px;';
             r2.textContent = formatUsdt(best.totalUsdt)+' USDT  |  Score: '+best.score+'/100';
             const btn = document.createElement('button');
-            btn.textContent = '💾 Guardar para backtesting';
+            btn.textContent = best.tier === 'RETAIL' ? '📌 RETAIL — no guardable' : '💾 Guardar para backtesting';
+            if (best.tier === 'RETAIL') { btn.style.background = 'rgba(100,100,100,0.2)'; btn.style.color = '#666'; btn.style.borderColor = '#444'; }
             btn.style.cssText = 'flex:1;padding:6px 0;border-radius:5px;cursor:pointer;background:rgba(33,150,243,0.3);border:1px solid #2196f3;color:#90caf9;font-size:11px;font-family:Consolas,monospace;';
-            btn.onclick = () => { window.saveInstZoneByPrice(best.price); removeTip(); pinned=false; };
+            btn.onclick = () => {
+                if (best.tier === 'RETAIL') {
+                    showSaveNotificationInst && showSaveNotificationInst('📌 Zonas RETAIL no se guardan', 'warn');
+                    return;
+                }
+                window.saveInstZoneByPrice(best.price); removeTip(); pinned=false;
+            };
 
             // Botón Trade Setup pequeño
             const tsBtn = document.createElement('button');
