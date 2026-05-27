@@ -3069,7 +3069,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
             const cacheKey = `${sym}_1h`;
             const now = Date.now();
             // Solo cargar si no hay caché o tiene más de 15 min
-            if (!window._fiboCache[cacheKey] || now - window._fiboCache[cacheKey].ts > 15*60*1000) {
+            if (!window._fiboCache[cacheKey] || now - window._fiboCache[cacheKey].ts > 120*60*1000) {
                 fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=100`)
                     .then(r => r.json())
                     .then(data => {
@@ -3123,9 +3123,22 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         window._tgZoneTimestamps = window._tgZoneTimestamps || {};
 
         // ── Niveles Mxwll para este par ──
-        const candles = (sym === symbol && window.candlesData?.length >= 50)
+        // Usar candlesData del par activo, o caché del watchlist
+        let candles = (sym === symbol && window.candlesData?.length >= 50)
             ? window.candlesData
             : (window._fiboCache?.[`${sym}_1h`]?.candles || null);
+        // Si no hay caché, cargar velas ahora y guardar para próxima vez
+        if (!candles) {
+            fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=100`)
+                .then(r=>r.json()).then(data=>{
+                    if(!Array.isArray(data)) return;
+                    window._fiboCache[`${sym}_1h`] = {
+                        candles: data.map(k=>({time:k[0]/1000,open:parseFloat(k[1]),high:parseFloat(k[2]),low:parseFloat(k[3]),close:parseFloat(k[4])})),
+                        ts: Date.now()
+                    };
+                }).catch(()=>{});
+            return; // Esta vez no alertar, la próxima vez ya habrá caché
+        }
 
         let goldLevels = [], counterFibs = 0;
         let bearAOI = 0, bullAOI = Infinity;
@@ -3135,10 +3148,12 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 const fibData = window.SMC.getFibs(candles);
                 if (fibData && typeof fibData.fib === 'function') {
                     counterFibs = fibData.isBear ? 1 : -1;
-                    [0.382, 0.500, 0.618].forEach(lvl => {
+                    // Gold Zone: zona dorada 0.618-0.786 (Mxwll Suite)
+                    [0.618, 0.705, 0.786].forEach(lvl => {
                         const gp = fibData.fib(lvl);
                         if (gp && gp > 0) goldLevels.push({ price: gp, lvl });
                     });
+
                 }
             }
             const r50 = candles.slice(-50);
@@ -3204,9 +3219,9 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                         isAOI = Math.abs(zone.price - bearAOI) / zone.price < CONF_RADIUS;
                     }
                     if (!isGoldZone && !isAOI) return;
-                    // Solo bloquear si tendencia muy contraria Y sin AOI
-                    if (counterFibs === -1 && !isBid && !isAOI) return;
-                    if (counterFibs === 1  && isBid  && !isAOI) return;
+                    // counterFibs estricto: tendencia define dirección
+                    if (counterFibs === -1 && !isBid) return; // alcista → SOLO LONG
+                    if (counterFibs === 1  && isBid)  return; // bajista → SOLO SHORT
 
                     hasFVG = fvgs.some(f =>
                         (isBid ? f.type==='bull' : f.type==='bear') &&
@@ -6701,7 +6716,7 @@ window._checkTradeSetupLevels = function(price) {
     const now = Date.now();
     const BLOCK_TIME   = 4 * 60 * 60 * 1000;
     const OPP_BLOCK    = 2 * 60 * 60 * 1000;
-    const CONF_RADIUS  = 0.004;  // 0.4% coincidencia con nivel Mxwll
+    const CONF_RADIUS  = 0.008;  // 0.8% — zona dorada es un rango, no punto exacto
     const WARN_RADIUS  = 0.005;  // 0.5% alerta previa
     const TOUCH_RADIUS = 0.002;  // 0.2% tocando zona
     window._tgZoneTimestamps = window._tgZoneTimestamps || {};
@@ -6713,11 +6728,13 @@ window._checkTradeSetupLevels = function(price) {
         const fibData = window.SMC.getFibs(candles);
         if (fibData && typeof fibData.fib === 'function') {
             counterFibs = fibData.isBear ? 1 : -1;
-            // Retracements: zonas de REBOTE (0.382/0.5/0.618)
-            [0.382, 0.500, 0.618].forEach(lvl => {
+            // Gold Zone: zona dorada entre 0.618 y 0.786 (Mxwll Suite)
+            // El precio va a buscar esta zona y rebota
+            [0.618, 0.705, 0.786].forEach(lvl => {
                 const gp = fibData.fib(lvl);
                 if (gp > 0) retraceLevels.push({ price: gp, lvl });
             });
+
             // Extensiones: objetivos y zonas de RECHAZO (1.272/1.618/2.618)
             [1.272, 1.618, 2.618].forEach(lvl => {
                 const gp = fibData.fib(lvl);
@@ -6778,10 +6795,9 @@ window._checkTradeSetupLevels = function(price) {
             continue;
         }
 
-        // counterFibs: bonus/info pero NO bloqueo duro
-        // Solo bloquear si tendencia es muy contraria Y no hay AOI confirmación
-        if (counterFibs === -1 && !isBid && !isAOI) continue; // SHORT sin AOI en tendencia alcista
-        if (counterFibs === 1  && isBid  && !isAOI) continue; // LONG  sin AOI en tendencia bajista
+        // counterFibs: bloqueo estricto (Mxwll — tendencia define dirección)
+        if (counterFibs === -1 && !isBid) continue; // tendencia alcista → SOLO LONG
+        if (counterFibs === 1  && isBid)  continue; // tendencia bajista → SOLO SHORT
 
         // FVG alineado
         hasFVG = fvgs.some(f =>
