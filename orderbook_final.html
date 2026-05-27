@@ -3102,12 +3102,11 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         let history;
         try { history = JSON.parse(raw); } catch(e) { return; }
 
-        const daysToCheck = [];
-        for (let d = 0; d <= 2; d++) {
-            const dt = new Date();
-            dt.setDate(dt.getDate() - d);
-            daysToCheck.push(dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'));
-        }
+        // Revisar TODOS los días guardados (no solo 3 días)
+        const daysToCheck = Object.keys(history).filter(day => {
+            // Solo zonas no mitigadas en cualquier día
+            return (history[day] || []).some(z => !z.mitigated && z.status !== 'mitigated');
+        });
 
         let anyChange = false;
         const now = Date.now();
