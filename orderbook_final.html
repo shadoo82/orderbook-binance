@@ -2477,7 +2477,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
     // ── Guardar TODAS las zonas activas de una vez ──
     window.saveAllInstZones = function() {
-        const activeZones = (window.institutionalZones || institutionalZones).filter(z => !z.mitigated);
+        const activeZones = (window.institutionalZones || institutionalZones).filter(z => !z.mitigated && (z.tier === 'INST' || z.tier === 'WHALE'));
         if (!activeZones.length) { alert('No hay zonas activas para guardar'); return; }
         let saved = 0;
         // Guardar en localStorage directamente (igual que saveZoneToDaily pero sin renderizar cada vez)
@@ -2619,10 +2619,9 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
         // ── Filtro de tier ──
         const _tiers = [
-            { key:'ALL',    label:'Todas',       color:'#888' },
-            { key:'WHALE',  label:'🐋 WHALE',    color:'#4dd0e1' },
-            { key:'INST',   label:'🏛️ INST',     color:'#ce93d8' },
-            { key:'RETAIL', label:'📌 RETAIL',   color:'#aaa' },
+            { key:'ALL',   label:'Todas',      color:'#888' },
+            { key:'WHALE', label:'🐋 WHALE',   color:'#4dd0e1' },
+            { key:'INST',  label:'🏛️ INST',    color:'#ce93d8' },
         ];
         const _tierCount = { ALL: zones.length };
         zones.forEach(z => { _tierCount[z.tier] = (_tierCount[z.tier]||0)+1; });
@@ -4890,8 +4889,9 @@ function renderBtZonesList() {
     }
 
     // Separar pendientes y mitigadas
-    const pending   = zonesToShow.filter(z => !z.mitigated && z.status !== 'mitigated');
-    const mitigated = zonesToShow.filter(z =>  z.mitigated || z.status === 'mitigated');
+    // Solo INST y WHALE en backtesting
+    const pending   = zonesToShow.filter(z => (!z.mitigated && z.status !== 'mitigated') && (z.tier==='INST'||z.tier==='WHALE'));
+    const mitigated = zonesToShow.filter(z =>  (z.mitigated || z.status === 'mitigated') && (z.tier==='INST'||z.tier==='WHALE'));
 
     const renderCard = (zone) => {
         const isBid    = zone.side === 'bid';
