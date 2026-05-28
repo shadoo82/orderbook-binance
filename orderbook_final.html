@@ -2993,7 +2993,13 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     });
                     window._watchlistPrices = window._watchlistPrices || {};
                     window._watchlistPrices[sym] = price;
-                    // checkZonesForSymbol desactivado
+                    // Verificar zonas cada 5 minutos por par
+                    window._lastZoneCheck = window._lastZoneCheck || {};
+                    const _nt = Date.now();
+                    if (!window._lastZoneCheck[sym] || _nt - window._lastZoneCheck[sym] > 300000) {
+                        window._lastZoneCheck[sym] = _nt;
+                        checkZonesForSymbol(sym, price);
+                    }
                     // Verificar zonas SMC (Fibonacci, FVG, OB, AOI) — solo para el par activo
                     if (sym === symbol && window.SMC) SMC.checkProximity(price);
                 }
@@ -3041,7 +3047,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     .some(z => !z.mitigated && z.status !== 'mitigated');
                 if (hasPending) {
                     activeSyms.add(sym);
-                    // connectSymbolTicker desactivado — no monitoreo de segundo plano
+                    if (!_symWS.has(sym)) connectSymbolTicker(sym);
                 }
             } catch(e) {}
         }
@@ -3099,11 +3105,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
     // ── Verificar zonas para un símbolo (llamado por el WS en tiempo real) ──
     function checkZonesForSymbol(sym, currentPrice) {
-        // ── PROTECCIÓN SIMPLE: máximo 1 alerta por par cada 1 hora ──
-        window._lastAlert = window._lastAlert || {};
-        const now = Date.now();
-        const ONE_HOUR = 60 * 60 * 1000;
-        if (window._lastAlert[sym] && now - window._lastAlert[sym] < ONE_HOUR) return;
+        if (!window.TG?.cfg?.enabled) return;
+        if (!currentPrice) return;
 
         const histKey = `inst_zones_history_${sym}`;
         let raw;
@@ -3117,69 +3120,52 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         );
         if (!daysToCheck.length) return;
 
-        const SL_PCT      = 0.020;
+        const now         = Date.now();
+        const FOUR_HOURS  = 4 * 60 * 60 * 1000;
         const WARN_RADIUS = 0.005;   // 0.5% → alerta previa
         const TOUCH_RADIUS = 0.002;  // 0.2% → señal de entrada
-        const CONF_RADIUS  = 0.008;  // 0.8% → zona en Gold Zone
+        const SL_PCT      = 0.020;
+        window._tgZoneTimestamps = window._tgZoneTimestamps || {};
 
-        // ── Velas para Mxwll ──
-        let candles = (sym === symbol && window.candlesData?.length >= 50)
+        // Velas para Mxwll (solo si disponibles)
+        const candles = (sym === symbol && window.candlesData?.length >= 50)
             ? window.candlesData
             : (window._fiboCache?.[`${sym}_1h`]?.candles || null);
 
-        if (!candles) {
-            // Cargar velas y esperar próxima vez
-            fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=100`)
-                .then(r=>r.json()).then(data=>{
-                    if(!Array.isArray(data)) return;
-                    window._fiboCache = window._fiboCache || {};
-                    window._fiboCache[`${sym}_1h`] = {
-                        candles: data.map(k=>({time:k[0]/1000,open:parseFloat(k[1]),high:parseFloat(k[2]),low:parseFloat(k[3]),close:parseFloat(k[4])})),
-                        ts: Date.now()
-                    };
-                }).catch(()=>{});
-            return;
-        }
+        let counterFibs = 0, goldLevels = [], bearAOI = 0, bullAOI = Infinity;
+        const hasMxwll = candles && candles.length >= 50;
 
-        // ── Calcular niveles Mxwll ──
-        let goldLevels = [], counterFibs = 0, bearAOI = 0, bullAOI = Infinity;
-
-        if (window.SMC && typeof window.SMC.getFibs === 'function') {
-            const fibData = window.SMC.getFibs(candles);
-            if (fibData && typeof fibData.fib === 'function') {
-                counterFibs = fibData.isBear ? 1 : -1;
-                // Gold Zone = 0.618 y 0.786
-                [0.618, 0.705, 0.786].forEach(lvl => {
-                    const gp = fibData.fib(lvl);
-                    if (gp && gp > 0) goldLevels.push({ price: gp, lvl });
-                });
+        if (hasMxwll) {
+            if (window.SMC && typeof window.SMC.getFibs === 'function') {
+                const fibData = window.SMC.getFibs(candles);
+                if (fibData && typeof fibData.fib === 'function') {
+                    counterFibs = fibData.isBear ? 1 : -1;
+                    [0.618, 0.705, 0.786].forEach(lvl => {
+                        const gp = fibData.fib(lvl);
+                        if (gp > 0) goldLevels.push({ price: gp, lvl });
+                    });
+                }
             }
+            const r50 = candles.slice(-50);
+            bearAOI = Math.max(...r50.map(c => c.high));
+            bullAOI = Math.min(...r50.map(c => c.low));
         }
 
-        const r50 = candles.slice(-50);
-        bearAOI = Math.max(...r50.map(c => c.high));
-        bullAOI = Math.min(...r50.map(c => c.low));
-
-        const fvgs = window.detectFVGs ? window.detectFVGs(candles, currentPrice) : [];
-        const hasMxwll = goldLevels.length > 0;
-
-        // ── Revisar zonas guardadas ──
-        let sent = false;
+        const fvgs = (hasMxwll && window.detectFVGs) ? window.detectFVGs(candles, currentPrice) : [];
+        const CONF_RADIUS = 0.008;
 
         for (const day of daysToCheck) {
-            if (sent) break;
             for (const zone of (history[day] || [])) {
-                if (sent) break;
                 if (zone.mitigated || zone.status === 'mitigated') continue;
+                if (zone.tier === 'RETAIL') continue; // solo INST y WHALE
 
                 const isBid = zone.side === 'bid';
                 const isAsk = !isBid;
 
-                // ── Mitigación ──
-                const buffer = 0.0015;
+                // Mitigación
                 const touched = isAsk
-                    ? currentPrice >= zone.price * (1 - buffer)
-                    : currentPrice <= zone.price * (1 + buffer);
+                    ? currentPrice >= zone.price * (1 - 0.0015)
+                    : currentPrice <= zone.price * (1 + 0.0015);
                 if (touched) {
                     zone.mitigated = true; zone.status = 'mitigated';
                     zone.touchPrice = currentPrice; zone.touchTime = new Date().toISOString();
@@ -3189,25 +3175,20 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     continue;
                 }
 
-                if (!window.TG?.cfg?.enabled) continue;
-                if (zone.tier === 'RETAIL') continue;
-
-                // ── Filtros Mxwll ──
-                if (hasMxwll) {
-                    if (counterFibs === -1 && isAsk) continue;  // alcista → solo LONG
-                    if (counterFibs === 1  && isBid) continue;  // bajista → solo SHORT
-                }
-
-                // Dirección: precio llegando a la zona
+                // Dirección correcta
                 if (isBid && currentPrice < zone.price) continue;
                 if (isAsk && currentPrice > zone.price) continue;
 
+                // Distancia
                 const distToZone = Math.abs(currentPrice - zone.price) / zone.price;
                 if (distToZone > WARN_RADIUS) continue;
 
-                // Gold Zone o AOI
-                let isGoldZone = false, goldLvl = null, isAOI = false;
+                // Filtros Mxwll si hay velas
+                let isGoldZone = false, goldLvl = null, isAOI = false, hasFVG = false;
                 if (hasMxwll) {
+                    if (counterFibs === -1 && isAsk) continue;
+                    if (counterFibs === 1  && isBid) continue;
+
                     for (const g of goldLevels) {
                         if (Math.abs(zone.price - g.price) / zone.price < CONF_RADIUS) {
                             isGoldZone = true; goldLvl = g.lvl; break;
@@ -3216,43 +3197,46 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     isAOI = isBid
                         ? Math.abs(zone.price - bullAOI) / zone.price < CONF_RADIUS
                         : Math.abs(zone.price - bearAOI) / zone.price < CONF_RADIUS;
+
                     if (!isGoldZone && !isAOI) continue;
+
+                    hasFVG = fvgs.some(f =>
+                        (isBid ? f.type==='bull' : f.type==='bear') &&
+                        Math.abs(f.mid - zone.price) / zone.price < CONF_RADIUS
+                    );
                 }
 
-                const hasFVG = fvgs.some(f =>
-                    (isBid ? f.type==='bull' : f.type==='bear') &&
-                    Math.abs(f.mid - zone.price) / zone.price < CONF_RADIUS
-                );
+                // Anti-spam: 4 horas por zona específica
+                const zoneKey = `zone_${sym}_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}`;
+                if (window._tgZoneTimestamps[zoneKey] && now - window._tgZoneTimestamps[zoneKey] < FOUR_HOURS) continue;
+                window._tgZoneTimestamps[zoneKey] = now;
 
-                // ── Enviar alerta ──
-                window._lastAlert[sym] = now; // bloquear 1 hora ANTES de enviar
-                sent = true;
-
-                const isEntry  = distToZone <= TOUCH_RADIUS;
-                const dir      = isBid ? '🟢 LONG' : '🔴 SHORT';
-                const ti       = zone.tier==='WHALE' ? '🐋' : '🏛️';
+                // Enviar alerta
+                const isEntry = distToZone <= TOUCH_RADIUS;
+                const dir     = isBid ? '🟢 LONG' : '🔴 SHORT';
+                const ti      = zone.tier==='WHALE' ? '🐋' : '🏛️';
                 const fp = n => {
                     if (!n && n!==0) return '—';
                     const d = n>=10000?1:n>=1000?2:n>=100?3:n>=10?3:n>=1?4:n>=0.1?5:n>=0.01?6:8;
                     return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
                 };
-                const entry    = zone.price;
-                const sl       = isBid ? entry*(1-SL_PCT) : entry*(1+SL_PCT);
-                const risk     = Math.abs(entry-sl);
-                const tp1      = isBid ? entry+risk   : entry-risk;
-                const tp2      = isBid ? entry+risk*2 : entry-risk*2;
-                const tp3      = isBid ? entry+risk*3 : entry-risk*3;
-                const pct      = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
-                const dist     = (distToZone*100).toFixed(2);
-                const sess     = window.getTradingSession?.() || { name:'' };
-                const sEmoji   = sess.name==='New York'?'🇺🇸':sess.name==='London'?'🇬🇧':sess.name==='Asia'?'🌏':'🕐';
+                const entry = zone.price;
+                const sl    = isBid ? entry*(1-SL_PCT) : entry*(1+SL_PCT);
+                const risk  = Math.abs(entry-sl);
+                const tp1   = isBid ? entry+risk   : entry-risk;
+                const tp2   = isBid ? entry+risk*2 : entry-risk*2;
+                const tp3   = isBid ? entry+risk*3 : entry-risk*3;
+                const pct   = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
+                const dist  = (distToZone*100).toFixed(2);
+                const sess  = window.getTradingSession?.() || { name:'' };
+                const sEmoji = sess.name==='New York'?'🇺🇸':sess.name==='London'?'🇬🇧':sess.name==='Asia'?'🌏':'🕐';
                 const confLine = [
                     isGoldZone ? `🥇 Gold Zone Fib ${goldLvl}` : null,
                     isAOI      ? `📍 ${isBid?'Bull':'Bear'} AOI` : null,
-                    hasFVG     ? '📊 FVG alineado' : null,
+                    hasFVG     ? '📊 FVG' : null,
                 ].filter(Boolean).join(' · ');
 
-                const lines = isEntry ? [
+                const msg = isEntry ? [
                     `🚨 SEÑAL DE ENTRADA — ${sym}`,``,
                     `${dir} ${ti} ${zone.tier}  ⏱️ 1H`,
                     `Zona: ${fp(zone.price)}  (${formatUsdt(zone.totalUsdt||0)} USDT)`,
@@ -3269,17 +3253,16 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     `${dir} ${ti} ${zone.tier}  ⏱️ 1H`,
                     `Zona: ${fp(zone.price)}  (${formatUsdt(zone.totalUsdt||0)} USDT)`,
                     confLine ? `${sEmoji} ${sess.name} · ${confLine}` : `${sEmoji} ${sess.name}`,
-                    `Precio actual: ${fp(currentPrice)}`,
-                    `Distancia: ${dist}% — prepárate para entrar`,``,
-                    `🎯 Entrada esperada: ${fp(entry)}`,
-                    `⛔ Stop Loss:        ${fp(sl)}  (−${(SL_PCT*100).toFixed(2)}%)`,``,
-                    `✅ TP1   ${fp(tp1)}  +${pct(tp1)}%`,
-                    `✅ TP2   ${fp(tp2)}  +${pct(tp2)}%`,
-                    `✅ TP3   ${fp(tp3)}  +${pct(tp3)}%`,``,
+                    `Precio: ${fp(currentPrice)} · Dist: ${dist}%`,``,
+                    `🎯 Entrada: ${fp(entry)}`,
+                    `⛔ SL: ${fp(sl)}  (−${(SL_PCT*100).toFixed(2)}%)`,``,
+                    `✅ TP1 ${fp(tp1)}  +${pct(tp1)}%`,
+                    `✅ TP2 ${fp(tp2)}  +${pct(tp2)}%`,
+                    `✅ TP3 ${fp(tp3)}  +${pct(tp3)}%`,``,
                     `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
                 ];
 
-                window.TG.send(lines.filter(l=>l!==null).join('\n')).then(() => {
+                window.TG.send(msg.filter(l=>l!==null).join('\n')).then(()=>{
                     try {
                         const log = JSON.parse(localStorage.getItem('tg_alerts_log')||'[]');
                         log.push({ id:Date.now(), pair:sym, date:new Date().toLocaleDateString('sv'),
@@ -3290,14 +3273,11 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                         if (log.length>500) log.splice(0,log.length-500);
                         localStorage.setItem('tg_alerts_log', JSON.stringify(log));
                         console.log(`${isEntry?'🚨':'⚠️'} [${sym}] ${dir} @ ${fp(zone.price)}`);
-                    } catch(e) {}
+                    } catch(e){}
                 }).catch(()=>{});
-            }
-        }
 
-        if (history && Object.values(history).flat().some(z => z.mitigated && z.touchTime)) {
-            try { localStorage.setItem(histKey, JSON.stringify(history)); } catch(e) {}
-            if (sym === symbol) renderZonesPanel();
+                return; // una alerta por llamada
+            }
         }
     }
 
@@ -3916,8 +3896,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }, 500);
 
         // Sincronizar watchlist de WS al arrancar y cada 30s
-        // syncSymbolWatchlist desactivado
-        // syncSymbolWatchlist interval desactivado
+        setTimeout(() => syncSymbolWatchlist(), 3000);
+        setInterval(() => syncSymbolWatchlist(), 60000);
 
         // Los Sets savedZonePrices/drawnZonePrices son de SESIÓN
         // Al arrancar empiezan vacíos → "✅ Guardada" solo aparece
