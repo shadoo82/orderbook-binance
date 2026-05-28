@@ -589,7 +589,7 @@ class BinanceWebSocketManager {
                     // Actualizar formato de precio si es el primer tick del par
                     if (lastPriceUpdate === Date.now()) updateChartPriceFormat(newPrice);
                     // Verificar proximidad a zonas institucionales (cada 10s)
-                    if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 60000) {
+                    if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 30000) {
                         window._lastTGCheck = Date.now();
                         if (window._checkTradeSetupLevels) window._checkTradeSetupLevels(newPrice);
                     }
@@ -3767,7 +3767,12 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
         console.log(`✅ Nueva sesión: ${today} | Historial de ayer conservado en Backtesting`);
     }
-    window.checkDailyReset = checkDailyReset;
+    window.checkDailyReset = function() {
+        if (window._dailyResetRunning) return;
+        window._dailyResetRunning = true;
+        checkDailyReset();
+        setTimeout(() => { window._dailyResetRunning = false; }, 5000);
+    };
 
 
     // Guardar zona por precio (para cuando el índice filtrado no coincide con el array original)
@@ -6659,6 +6664,7 @@ window._checkTradeSetupLevels = function(price) {
     if (!window.TG?.cfg?.enabled) return;
     if (!price || !window._obReady) return;
     if (!window.institutionalZones?.length) return;
+    console.log(`📊 Check zonas: ${window.institutionalZones.filter(z=>!z.mitigated).length} activas | precio=${price.toFixed(2)}`);
 
     const now = Date.now();
     const FOUR_HOURS = 4 * 60 * 60 * 1000;
