@@ -2005,14 +2005,14 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         const price = markPriceFutures || 1;
 
         if (price >= 10000) {
-            // BTC: basado en backtesting real (269 zonas)
-            return { minUsdtToShow: 5_000_000, institutionalMin: 5_000_000, whaleMin: 37_000_000 };
+            // BTC: RETAIL desde 500K, INST 5M, WHALE 37M
+            return { minUsdtToShow:   500_000, institutionalMin: 5_000_000, whaleMin: 37_000_000 };
         } else if (price >= 1000) {
-            // ETH: basado en backtesting real (142 zonas)
-            return { minUsdtToShow: 1_200_000, institutionalMin: 1_200_000, whaleMin: 16_000_000 };
-        } else if (price >= 100) {
-            // SOL/HYPE: basado en backtesting real
-            return { minUsdtToShow:   535_000, institutionalMin:   535_000, whaleMin:  3_600_000 };
+            // ETH: RETAIL desde 100K, INST 1.2M, WHALE 16M
+            return { minUsdtToShow:   100_000, institutionalMin: 1_200_000, whaleMin: 16_000_000 };
+        } else if (price >= 50) {
+            // SOL/HYPE: RETAIL desde 50K, INST 535K, WHALE 3.6M
+            return { minUsdtToShow:    50_000, institutionalMin:   535_000, whaleMin:  3_600_000 };
         } else if (price >= 10) {
             // LINK: basado en backtesting real (21 zonas)
             return { minUsdtToShow:    82_000, institutionalMin:    82_000, whaleMin:    553_000 };
