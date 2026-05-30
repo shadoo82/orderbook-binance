@@ -332,6 +332,10 @@
       </select>
       <button onclick="autoScaleChart()">Auto Scale</button>
     </div>
+      <label for="ema-period" style="margin-left:10px;">EMA:</label>
+      <input type="number" id="ema-period" value="100" min="5" max="500" step="5"
+             style="width:55px;padding:2px 4px;background:#1a1a2e;color:#e0e0e0;border:1px solid #444;border-radius:4px;font-size:11px;"
+             onchange="window._emaPeriod=parseInt(this.value)||100; if(window.candlesData?.length>0){const e=calculateEMA(window.candlesData,window._emaPeriod);if(emaSeries)emaSeries.setData(e);}" />
   </div>
 
   <div class="chart-container" id="chart-container">
@@ -637,13 +641,13 @@ class BinanceWebSocketManager {
 
         // ── Calcular las top-N por USDT y actualizar las variables globales ──
         function rebuildTopOrders(now) {
-            const TOP = 20;
+            const TOP = 50; // Aumentado para capturar más zonas
 
             // ASKS: ordenar por precio ASC, tomar los TOP más grandes en USDT
             const asksArr = [];
             for (const [price, qty] of asksMap) {
                 const usdt = price * qty;
-                if (usdt > 100) asksArr.push({ price, qty, usdt });
+                if (usdt > 1000) asksArr.push({ price, qty, usdt }); // mín $1000
             }
             asksArr.sort((a, b) => b.usdt - a.usdt);
             const topAsks = asksArr.slice(0, TOP);
@@ -652,7 +656,7 @@ class BinanceWebSocketManager {
             const bidsArr = [];
             for (const [price, qty] of bidsMap) {
                 const usdt = price * qty;
-                if (usdt > 100) bidsArr.push({ price, qty, usdt });
+                if (usdt > 1000) bidsArr.push({ price, qty, usdt }); // mín $1000
             }
             bidsArr.sort((a, b) => b.usdt - a.usdt);
             const topBids = bidsArr.slice(0, TOP);
@@ -791,22 +795,32 @@ class BinanceWebSocketManager {
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
+        const _klineId = Date.now(); // ID único para esta conexión
+        window._activeKlineId = _klineId;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
+                // Ignorar si hay una conexión kline más nueva
+                if(window._activeKlineId !== _klineId) return;
                 const data=JSON.parse(event.data); const kline=data.k; if(!kline)return;
                 const newCandle={time:Math.floor(kline.t/1000),open:parseFloat(kline.o),high:parseFloat(kline.h),low:parseFloat(kline.l),close:parseFloat(kline.c),volume:parseFloat(kline.v)};
                 if(kline.x){const existingIndex=candlesData.findIndex(c=>c.time===newCandle.time); if(existingIndex!==-1)candlesData[existingIndex]=newCandle; else candlesData.push(newCandle); if(candlesData.length>1000)candlesData.shift(); lastCandle=newCandle;}
                 else{if(candlesData.length>0&&candlesData[candlesData.length-1].time===newCandle.time)candlesData[candlesData.length-1]=newCandle; else if(candlesData.length===0||newCandle.time>candlesData[candlesData.length-1].time){candlesData.push(newCandle);if(candlesData.length>1000)candlesData.shift();}}
                 if(candlestickSeries){
                     window.candlesData = candlesData;
-                    // Usar update() en vez de setData() para no reconstruir todo cada tick
-                    try { candlestickSeries.update(newCandle); } catch(_) {
-                        // Fallback: setData si update falla
-                        candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));
+                    // Throttle: actualizar gráfico máximo cada 500ms
+                    const _now = Date.now();
+                    if(!window._lastChartUpdate || _now - window._lastChartUpdate >= 500 || kline.x){
+                        window._lastChartUpdate = _now;
+                        try { candlestickSeries.update(newCandle); } catch(_) {
+                            candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));
+                        }
+                        // EMA solo al cerrar vela
+                        if(kline.x){
+                            const ema100=calculateEMA(candlesData,window._emaPeriod||100);
+                            if(emaSeries)emaSeries.setData(ema100);
+                        }
                     }
-                    const ema100=calculateEMA(candlesData,100);
-                    if(emaSeries)emaSeries.setData(ema100);
                 }
             }catch(err){console.error('Error procesando kline:',err);}
         },true);
@@ -828,7 +842,8 @@ class BinanceWebSocketManager {
                 const pingInterval=setInterval(()=>{
                     if(ws.readyState===WebSocket.OPEN){
                         try{
-                            ws.send(JSON.stringify({method:'ping'}));
+                            // Browser maneja WebSocket PING/PONG automáticamente
+                            // No enviar ping manual — causa error 1008
                         }catch(e){}
                     } else if(ws.readyState===WebSocket.CLOSED){
                         scheduleReconnect();
@@ -836,7 +851,9 @@ class BinanceWebSocketManager {
                 }, 3 * 60 * 1000);  // cada 3 minutos
                 this.pingIntervals.set(type,pingInterval);
                 if(type==='kline'){
-                    if(!window._klineLoading){
+                    // Solo cargar histórico si no hay velas ya (evita saltos en reconexión)
+                    const needsLoad = !window.candlesData || window.candlesData.length === 0;
+                    if(needsLoad && !window._klineLoading){
                         window._klineLoading=true;
                         setTimeout(()=>{
                             loadHistoricalKlines()
@@ -902,12 +919,14 @@ function reconnectAllWebSockets() {
     wsManager.disconnectAll();
     setTimeout(()=>{wsManager=new BinanceWebSocketManager(symbol);wsManager.connectAll(currentInt);clearError();},1000);
 }
+
 async function initializeWebSockets() {
     if(wsManager)wsManager.disconnectAll();
 
     // ── Limpiar gráfico completamente al cambiar de par ──
-    markPriceFutures = 0;  // reset precio para evitar mitigaciones falsas
+    markPriceFutures = 0;
     lastPriceUpdate = 0;
+    window.candlesData = []; // reset velas al cambiar par
     // Reset header para evitar mostrar precio del par anterior
     const _hdrPrc = document.getElementById('hdr-price');
     const _hdrSym = document.getElementById('hdr-symbol');
@@ -1376,7 +1395,7 @@ async function loadHistoricalKlines() {
         const data=await response.json();
         candlesData=data.map(kline=>({time:Math.floor(kline[0]/1000),open:parseFloat(kline[1]),high:parseFloat(kline[2]),low:parseFloat(kline[3]),close:parseFloat(kline[4]),volume:parseFloat(kline[5]),usdt:parseFloat(kline[7])}));
         if(candlesData.length>1000)candlesData=candlesData.slice(-1000);
-        if(candlestickSeries){window.candlesData = candlesData; candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));const ema100=calculateEMA(candlesData,100);if(emaSeries)emaSeries.setData(ema100);const loadingMsg=document.querySelector('.loading-message');if(loadingMsg)loadingMsg.style.display='none';
+        if(candlestickSeries){window.candlesData = candlesData; candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));const ema100=calculateEMA(candlesData,window._emaPeriod||100);if(emaSeries)emaSeries.setData(ema100);const loadingMsg=document.querySelector('.loading-message');if(loadingMsg)loadingMsg.style.display='none';
         // Ajustar precisión decimal según el precio del par
         if (candlesData.length > 0) {
             updateChartPriceFormat(candlesData[candlesData.length-1].close);
@@ -2003,29 +2022,43 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
     // BTCUSDT $80k    → thresholds normales
     function getScaledThresholds() {
         const price = markPriceFutures || 1;
+        const sym = (typeof symbol !== 'undefined' ? symbol : '').toUpperCase();
 
-        if (price >= 10000) {
-            // BTC: RETAIL desde 500K, INST 5M, WHALE 37M
-            return { minUsdtToShow:   500_000, institutionalMin: 5_000_000, whaleMin: 37_000_000 };
-        } else if (price >= 1000) {
-            // ETH: RETAIL desde 100K, INST 1.2M, WHALE 16M
-            return { minUsdtToShow:   100_000, institutionalMin: 1_200_000, whaleMin: 16_000_000 };
-        } else if (price >= 50) {
-            // SOL/HYPE: RETAIL desde 50K, INST 535K, WHALE 3.6M
-            return { minUsdtToShow:    50_000, institutionalMin:   535_000, whaleMin:  3_600_000 };
-        } else if (price >= 10) {
-            // LINK: basado en backtesting real (21 zonas)
-            return { minUsdtToShow:    82_000, institutionalMin:    82_000, whaleMin:    553_000 };
-        } else if (price >= 1) {
-            // XRP/ADA: basado en backtesting real
-            return { minUsdtToShow:   350_000, institutionalMin:   350_000, whaleMin:  2_400_000 };
-        } else if (price >= 0.1) {
-            // XRP, DOGE range
-            return { minUsdtToShow:     5_000, institutionalMin:    20_000,  whaleMin:     100_000 };
-        } else {
-            // Micro-cap < $0.1
-            return { minUsdtToShow:     1_000, institutionalMin:     5_000,  whaleMin:      20_000 };
+        // ── Thresholds por par (basado en backtesting real) ──
+        if (sym.startsWith('BTC') || price >= 10000) {
+            // BTC: 269 zonas | RETAIL <1M | INST 5M-37M | WHALE >37M
+            return { minUsdtToShow: 1_000_000, institutionalMin: 5_000_000, whaleMin: 37_000_000 };
         }
+        if (sym.startsWith('ETH') || price >= 1000) {
+            // ETH: 142 zonas | RETAIL <500K | INST 1.2M-16M | WHALE >16M
+            return { minUsdtToShow:   500_000, institutionalMin: 1_200_000, whaleMin: 16_000_000 };
+        }
+        if (sym.startsWith('SOL') || sym.startsWith('BNB') || sym.startsWith('HYPE') || price >= 50) {
+            // SOL/HYPE: 98/31 zonas | RETAIL <200K | INST 535K-3.6M | WHALE >3.6M
+            return { minUsdtToShow:   200_000, institutionalMin:   535_000, whaleMin:  3_600_000 };
+        }
+        if (sym.startsWith('XRP')) {
+            // XRP: 67 zonas (todas WHALE) | RETAIL <200K | INST 382K | WHALE >2.46M
+            return { minUsdtToShow:   200_000, institutionalMin:   382_000, whaleMin:  2_460_000 };
+        }
+        if (sym.startsWith('ADA')) {
+            // ADA: 8 zonas (todas WHALE) | RETAIL <200K | INST 260K | WHALE >1.92M
+            return { minUsdtToShow:   200_000, institutionalMin:   260_000, whaleMin:  1_920_000 };
+        }
+        if (sym.startsWith('LINK') || (price >= 5 && price < 50)) {
+            // LINK: 21 zonas | RETAIL <50K | INST 82K | WHALE >553K
+            return { minUsdtToShow:    50_000, institutionalMin:    82_000, whaleMin:    553_000 };
+        }
+        if (sym.startsWith('ONDO') || (price >= 0.1 && price < 5)) {
+            // ONDO: 19 zonas | RETAIL <50K | INST 87K | WHALE >194K
+            return { minUsdtToShow:    50_000, institutionalMin:    87_000, whaleMin:    194_000 };
+        }
+        if (sym.startsWith('TAC') || price < 0.1) {
+            // TAC: 14 zonas | RETAIL <3K | INST 6K | WHALE >19K
+            return { minUsdtToShow:     3_000, institutionalMin:     6_000, whaleMin:     19_000 };
+        }
+        // Fallback genérico
+        return { minUsdtToShow:    50_000, institutionalMin:   200_000, whaleMin:  1_000_000 };
     }
 
     // ============================================================
@@ -2154,6 +2187,26 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
     // ============================================================
     // 🎨 2. DIBUJAR ZONAS EN EL GRÁFICO CON LABEL USDT
     // ============================================================
+    
+    // ── Contar visitas históricas de una zona ──
+    function countHistoricalVisits(sym, price, side) {
+        try {
+            const raw = localStorage.getItem(`inst_zones_history_${sym}`);
+            if (!raw) return 0;
+            const history = JSON.parse(raw);
+            const RADIUS = 0.005; // 0.5% radio
+            let visits = 0;
+            Object.values(history).flat().forEach(z => {
+                if (z.side === side &&
+                    z.mitigated &&
+                    Math.abs(z.price - price) / price < RADIUS) {
+                    visits++;
+                }
+            });
+            return visits;
+        } catch(e) { return 0; }
+    }
+
     function drawInstitutionalZonesOnChart(zones) {
         if (!chart || !candlestickSeries) return;
 
@@ -2187,6 +2240,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     width = 1; opacity = 0.40; lineStyle = 2; // punteada = bajo volumen
                 }
 
+                // Verde para bid (soporte), rojo para ask (resistencia)
                 const baseColor = isBid ? `0,255,136` : `255,85,85`;
                 const lineColor = `rgba(${baseColor},${opacity})`;
 
@@ -2212,13 +2266,41 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 // Indicador visual de volumen en el label: más $ = más volumen
                 const volBar = usdt >= 100e6 ? '$$$$' : usdt >= 50e6 ? '$$$' : usdt >= 20e6 ? '$$' : usdt >= 10e6 ? '$' : '';
 
+                // Contar rebotes según temporalidad activa
+                const _rebounds = (()=>{
+                    try {
+                        const _h = JSON.parse(localStorage.getItem(`inst_zones_history_${symbol}`) || '{}');
+                        // Ventana de tiempo según intervalo activo
+                        const _lookbackMs = {
+                            '1m': 2*3600000, '3m': 4*3600000, '5m': 8*3600000,
+                            '15m': 24*3600000, '30m': 2*24*3600000,
+                            '1h': 3*24*3600000, '2h': 5*24*3600000,
+                            '4h': 7*24*3600000, '6h': 10*24*3600000,
+                            '12h': 14*24*3600000, '1d': 30*24*3600000,
+                        }[currentInterval] || 3*24*3600000;
+                        const _cutoff = Date.now() - _lookbackMs;
+                        let count = 0;
+                        Object.entries(_h).forEach(([day, zones]) => {
+                            if (new Date(day).getTime() < _cutoff) return;
+                            zones.forEach(z => {
+                                if (z.mitigated &&
+                                    z.side === zone.side &&
+                                    Math.abs(z.price - zone.price) / zone.price < 0.0015) {
+                                    count++;
+                                }
+                            });
+                        });
+                        return count > 0 ? ` ×${count + 1}` : '';
+                    } catch(_) { return ''; }
+                })();
+
                 lineSeries.createPriceLine({
                     price:             zone.price,
                     color:             `rgba(${baseColor},1)`,
                     lineWidth:         1,
                     lineStyle:         2,
                     axisLabelVisible:  true,
-                    title: `${volBar} ${tierIcon} ${sideLabel} | ${formatPrice(zone.price)} | ${formatUsdt(zone.totalUsdt)} | ${distSign}${distPct}%${(()=>{
+                    title: `${volBar} ${tierIcon} ${sideLabel} | ${formatPrice(zone.price)} | ${formatUsdt(zone.totalUsdt)} | ${distSign}${distPct}%${_rebounds}${(()=>{
     const today = getLocalDate ? getLocalDate() : new Date().toLocaleDateString('sv');
     const histKey = 'inst_zones_history_' + (typeof symbol !== 'undefined' ? symbol : '');
     try {
@@ -2850,6 +2932,11 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
             const mit     = zones.filter(z => z.mitigated).length;
             const pending = total - mit;
             const rate    = total > 0 ? Math.round(mit / total * 100) : 0;
+            // Stats por tier
+            const whaleZones = zones.filter(z => z.tier === 'WHALE');
+            const instZones  = zones.filter(z => z.tier === 'INST');
+            const whaleHit   = whaleZones.length > 0 ? Math.round(whaleZones.filter(z=>z.mitigated).length/whaleZones.length*100) : null;
+            const instHit    = instZones.length  > 0 ? Math.round(instZones.filter(z=>z.mitigated).length/instZones.length*100)   : null;
             const isToday = day === getLocalDate();
 
             return `
@@ -2865,6 +2952,10 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     <span style="color:#ff5555;">💥 ${mit} mitigadas</span>
                     <span style="color:#ffaa00;">⏳ ${pending} pendientes</span>
                     <span style="color:${rate>=60?'#00ff88':rate>=30?'#ffaa00':'#888'};">✅ ${rate}% hit</span>
+                </div>
+                <div style="display:flex; gap:10px; font-size:10px; margin-top:4px;">
+                    ${whaleHit !== null ? `<span style="color:#4dd0e1;">🐋 WHALE: ${whaleHit}% (${whaleZones.length})</span>` : ''}
+                    ${instHit  !== null ? `<span style="color:#ce93d8;">🏛️ INST: ${instHit}% (${instZones.length})</span>` : ''}
                 </div>
                 ${total > 0 ? `
                 <div style="margin-top:7px; height:4px; background:#111; border-radius:2px;">
@@ -3772,12 +3863,12 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         setInterval(checkDailyReset, 60000);
         checkDailyReset();   // verificar al arrancar
 
-        // Auto-refresh de zonas cada 30 segundos
+        // Auto-refresh de zonas cada 10 segundos
         setInterval(() => {
-            if (institutionalZones.length === 0 && markPriceFutures > 0) {
+            if (markPriceFutures > 0 && chart) {
                 window.refreshInstZones();
             }
-        }, 30000);
+        }, 10000);
 
         // Primer refresh cuando haya precio
         const waitPrice = setInterval(() => {
@@ -3788,6 +3879,30 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }, 500);
 
         console.log('✅ Sistema de zonas institucionales listo');
+
+    // ── Estadísticas históricas por par/tier ──
+    function getHistoricalStats(sym, tier) {
+        try {
+            const raw = localStorage.getItem(`inst_zones_history_${sym}`);
+            if (!raw) return null;
+            const history = JSON.parse(raw);
+            const zones = Object.values(history).flat()
+                .filter(z => !tier || z.tier === tier);
+            if (zones.length < 3) return null;
+            const mitigated = zones.filter(z => z.mitigated).length;
+            const hitRate = Math.round((mitigated / zones.length) * 100);
+            const whaleZones = zones.filter(z => z.tier === 'WHALE');
+            const instZones  = zones.filter(z => z.tier === 'INST');
+            const whaleHit = whaleZones.length > 0
+                ? Math.round((whaleZones.filter(z=>z.mitigated).length / whaleZones.length)*100) : null;
+            const instHit = instZones.length > 0
+                ? Math.round((instZones.filter(z=>z.mitigated).length / instZones.length)*100) : null;
+            return { hitRate, total: zones.length, mitigated, whaleHit, instHit,
+                     whaleCount: whaleZones.length, instCount: instZones.length };
+        } catch(e) { return null; }
+    }
+
+    window.getHistoricalStats = getHistoricalStats;
     }
 
     // Añadir animación al CSS
@@ -6563,7 +6678,7 @@ window.clearActiveTradeSetup = function() {
             if (!wsManager) return;
             wsManager.wsInstances.forEach((ws, type) => {
                 if (ws && ws.readyState === WebSocket.OPEN) {
-                    try { ws.send(JSON.stringify({ method: 'ping' })); } catch(_) {}
+                    // ping eliminado — causa 1008
                 } else if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
                     // WS cerrado — reconectar automáticamente
                     console.log(`🔄 Keepalive: reconectando ${type}...`);
@@ -6581,7 +6696,7 @@ window.clearActiveTradeSetup = function() {
                 if (!wsManager) return;
                 wsManager.wsInstances.forEach((ws) => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
-                        try { ws.send(JSON.stringify({ method: 'ping' })); } catch(_) {}
+                        // ping eliminado — causa 1008
                     }
                 });
             }, 3 * 60 * 1000);
@@ -7865,6 +7980,7 @@ function startWatchlistMonitor() {
                background:rgba(0,200,100,0.85);border:2px solid #0c6;
                color:#fff;font-size:20px;cursor:pointer;
                box-shadow:0 2px 8px rgba(0,0,0,0.4);">💾</button>
+
 
 
 
