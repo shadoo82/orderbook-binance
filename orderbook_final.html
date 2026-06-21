@@ -576,36 +576,36 @@ let chartLevelsManager = {
 // WEBSOCKET MANAGER
 // ===================================================
 class BinanceWebSocketManager {
-    constructor(symbol='BTCUSDT') { this.symbol=symbol.toLowerCase(); this.wsInstances=new Map(); this.pingIntervals=new Map(); this.reconnectTimeouts=new Map(); }
+    constructor(symbol='BTCUSDT', useSpot=false) { this.symbol=symbol.toLowerCase(); this.useSpot=useSpot; this.wsInstances=new Map(); this.pingIntervals=new Map(); this.reconnectTimeouts=new Map(); }
     connectAll(interval='1h') { this.connectTicker(); this.connectMarkPrice(); this.connectDepth(); this.connectKline(interval); }
     connectTicker() {
         const wsUrl = this.useSpot
             ? `wss://stream.binance.com:9443/ws/${this.symbol}@ticker`
-            : `wss://stream.binance.com/ws/${this.symbol}@ticker`;
-        this.createWebSocket('ticker',wsUrl,(event)=>{
-            try{
-                const data=JSON.parse(event.data);
-                if(data.c!==undefined){
-                    let newPrice=Number(data.c);
-                    const cambio24h=data.P?Number(data.P):0;
-                    markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
-                    if(smcEnabled)updateSMCCandles(newPrice);
-                    // Actualizar formato de precio si es el primer tick del par
-                    if (lastPriceUpdate === Date.now()) updateChartPriceFormat(newPrice);
-                    // Verificar proximidad a zonas institucionales (cada 10s)
-                    if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 30000) {
-                        window._lastTGCheck = Date.now();
-                        // _checkTradeSetupLevels desactivado temporalmente
+            : `wss://fstream.binance.com/ws/${this.symbol}@ticker`;
+            this.createWebSocket('ticker',wsUrl,(event)=>{
+                try{
+                    const data=JSON.parse(event.data);
+                    if(data.c!==undefined){
+                        let newPrice=Number(data.c);
+                        const cambio24h=data.P?Number(data.P):0;
+                        markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
+                        if(smcEnabled)updateSMCCandles(newPrice);
+                        // Actualizar formato de precio si es el primer tick del par
+                        if (lastPriceUpdate === Date.now()) updateChartPriceFormat(newPrice);
+                        // Verificar proximidad a zonas institucionales (cada 10s)
+                        if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 30000) {
+                            window._lastTGCheck = Date.now();
+                            // _checkTradeSetupLevels desactivado temporalmente
+                        }
+                        updateHeaderPrice(newPrice,cambio24h);
+                        updateTimestamp(); scheduleTableUpdate(); updateMarketSpread();
+                        // Ticker: SOLO actualiza precio en header y markPriceFutures
+                        // La vela la actualiza el stream @kline (ya viene agregado por Binance)
+                        if (window._rtUpdatePrice) window._rtUpdatePrice(newPrice);
                     }
-                    updateHeaderPrice(newPrice,cambio24h);
-                    updateTimestamp(); scheduleTableUpdate(); updateMarketSpread();
-                    // Ticker: SOLO actualiza precio en header y markPriceFutures
-                    // La vela la actualiza el stream @kline (ya viene agregado por Binance)
-                    if (window._rtUpdatePrice) window._rtUpdatePrice(newPrice);
-                }
-            }catch(err){console.error('Error en ticker:',err);}
-        });
-    }
+                }catch(err){console.error('Error en ticker:',err);}
+            });
+        }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
