@@ -18,7 +18,7 @@
       --color-purple: #9c27b0;
       --blue-color: #2196f3;
     }
-    body { background-color:var(--bg-color); color:var(--text-color); font-family:'Consolas','Monaco','Courier New',monospace; font-size:15px; margin:0; padding:10px; position:relative; min-height:100vh; }
+    body { background-color:var(--bg-color); color:var(--text-color); font-family:'Consolas','Monaco','Courier New',monospace; font-size:15px; margin:0; padding:10px 10px 30px 10px; position:relative; min-height:100vh; }
     .header-controls { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; width:100%; padding:10px 15px; background:linear-gradient(90deg,#1a1a1a 0%,#222 100%); border-radius:0; box-sizing:border-box; margin:0 auto 10px auto; box-shadow:0 2px 5px rgba(0,0,0,0.5); border:1px solid #333; border-bottom:2px solid #444; }
     .header-left { display:flex; align-items:center; gap:10px; flex-grow:1; }
     .search-container { display:flex; align-items:center; gap:5px; background:rgba(0,0,0,0.3); padding:4px 8px; border-radius:3px; border:1px solid #444; }
@@ -35,7 +35,7 @@
     .interval-selector select:hover { border-color:var(--bid-color); }
     .error-message { color:var(--ask-color); text-align:center; margin:8px 0; font-size:10px; }
     .loading-message { color:var(--bid-color); text-align:center; margin:8px 0; font-size:10px; }
-    .chart-container { width:100%; height:700px !important; margin:10px 0; border:1px solid #333; background-color:#0f0f0f; border-radius:0; position:relative !important; }
+    .chart-container { width:100%; height:900px !important; margin:10px 0; border:1px solid #333; background-color:#0f0f0f; border-radius:0; position:relative !important; }
     .container { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
     .panel { flex:1; border:1px solid #333; background-color:#151515; padding:5px 8px 8px 8px; min-width:300px; border-radius:0; position:relative; }
     .title-row { display:flex; align-items:center; justify-content:center; gap:5px; width:100%; text-align:center; margin-top:-5px; margin-bottom:8px; padding-bottom:5px; border-bottom:1px solid #333; }
@@ -81,7 +81,7 @@
     .panel-alert { position:absolute; top:5px; font-size:10px; font-weight:bold; padding:2px 5px; border-radius:3px; animation:flash 1s ease-in-out; z-index:100; }
     .ask-alert { right:10px; color:var(--ask-color); background-color:rgba(255,85,85,0.2); }
     .bid-alert { left:10px; color:var(--bid-color); background-color:rgba(85,255,85,0.2); }
-    .market-stats-container { background-color:#151515; border-radius:0; padding:10px; margin-bottom:10px; border:1px solid #333; box-shadow:none; }
+    .market-stats-container { background-color:#151515; border-radius:0; padding:10px; margin-bottom:4px; border:1px solid #333; box-shadow:none; }
     .stats-panel h3 { margin:0 0 8px 0; color:#00aaff; font-size:12px; text-align:center; padding-bottom:6px; border-bottom:1px solid #333; }
     .stats-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px; }
     .stats-column { padding:6px; border-radius:0; border:1px solid #2a2a2a; }
@@ -93,7 +93,7 @@
     .imbalance-value { font-weight:bold; font-size:11px; }
     .imbalance-bar { height:10px; background:linear-gradient(to right,var(--ask-color),var(--bid-color)); border-radius:0; margin-top:6px; position:relative; }
     .imbalance-indicator { position:absolute; height:14px; width:3px; background-color:white; top:-2px; transform:translateX(-50%); border-radius:0; }
-    .alert-container { position:fixed; bottom:15px; right:15px; max-width:250px; z-index:1000; }
+    .alert-container { position:fixed; top:70px; right:15px; max-width:260px; z-index:1000; }
     .market-alert { padding:6px 10px; margin:4px 0; border-radius:0; display:flex; justify-content:space-between; align-items:center; animation:fadeIn 0.3s ease; font-size:10px; background-color:#151515; border:1px solid #333; border-left:3px solid; box-shadow:0 2px 5px rgba(0,0,0,0.3); }
     .alert-time { color:var(--text-secondary); font-size:9px; margin-right:8px; }
     .alert-message { flex-grow:1; }
@@ -101,8 +101,8 @@
     .spread-alert { border-left:3px solid orange; }
     .imbalance-alert { border-left:3px solid mediumpurple; }
     .volume-alert { border-left:3px solid deepskyblue; }
-    .liquidity-controls-stats { display:flex; justify-content:space-between; margin-top:10px; padding:8px; background-color:rgba(0,0,0,0.3); border-radius:0; border:1px solid #333; }
-    .liquidity-thresholds-stats { display:flex; gap:5px; align-items:center; }
+    .liquidity-controls-stats { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:6px; margin-top:8px; margin-bottom:4px; padding:7px 10px; background-color:rgba(0,0,0,0.3); border-radius:4px; border:1px solid #333; }
+    .liquidity-thresholds-stats { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
     .liquidity-btn { background-color:#1a1a1a; color:var(--text-color); border:1px solid #444; padding:4px 8px; font-size:10px; border-radius:3px; cursor:pointer; font-family:'Consolas',monospace; transition:all 0.2s ease; }
     .liquidity-btn:hover { background-color:rgba(0,255,136,0.1); border-color:var(--bid-color); }
     .liquidity-thresholds input { background-color:rgba(0,0,0,0.5); color:var(--text-color); border:1px solid #444; padding:4px 6px; font-size:10px; border-radius:3px; font-family:'Consolas',monospace; width:80px; }
@@ -128,7 +128,7 @@
     .heatmap-off { background-color:#dc3545 !important; color:white !important; font-weight:bold; border:1px solid #ff5555 !important; }
     .#smc-panel { 
         position:absolute !important; 
-        top:8px !important; 
+        top:60px !important; 
         left:8px !important; 
         width:200px !important; 
         background:rgba(12,12,22,0.96); 
@@ -162,6 +162,60 @@
     #izp-content::-webkit-scrollbar-track { background:#0a0c12; }
     #izp-content::-webkit-scrollbar-thumb { background:#2a2a4a; border-radius:2px; }
     #inst-zones-btn:hover { background:linear-gradient(90deg,rgba(156,39,176,0.5),rgba(33,150,243,0.5)) !important; }
+    
+    /* ── TABLAS COLAPSABLES ── */
+    #tables-wrapper {
+        position: relative;
+        width: 100%;
+        margin-top: 4px;
+    }
+    #tables-handle {
+        width: 100%;
+        height: 18px;
+        background: linear-gradient(90deg,rgba(156,39,176,0.2),rgba(33,150,243,0.15),rgba(156,39,176,0.2));
+        border: 1px solid #3a2a4a;
+        border-bottom: none;
+        border-radius: 6px 6px 0 0;
+        display: flex; align-items: center; justify-content: center;
+        cursor: ns-resize; user-select: none;
+        transition: background 0.2s, height 0.2s;
+        position: relative; z-index: 2;
+    }
+    #tables-handle::before {
+        content: '▲  Libro de Órdenes — hover para ver  ▲';
+        font-size: 9px; color: #6a4a8a; letter-spacing: 1.5px;
+        font-family: 'Consolas', monospace; transition: color 0.2s;
+    }
+    #tables-wrapper:hover #tables-handle::before {
+        color: #ce93d8;
+        content: '▼  Libro de Órdenes  ▼';
+    }
+    #tables-wrapper.pinned #tables-handle::before {
+        color: #00ff88;
+        content: '📌 Libro de Órdenes — fijado  (clic para soltar)';
+    }
+    #tables-handle:hover {
+        background: linear-gradient(90deg,rgba(156,39,176,0.4),rgba(33,150,243,0.3),rgba(156,39,176,0.4));
+        height: 22px;
+    }
+    #tables-collapsible {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease;
+        opacity: 0;
+        border: 1px solid #3a2a4a; border-top: none;
+        border-radius: 0 0 4px 4px;
+    }
+    #tables-wrapper:hover #tables-collapsible,
+    #tables-wrapper.pinned #tables-collapsible {
+        max-height: 900px;
+        opacity: 1;
+    }
+    /* El .container ya no necesita margen propio */
+    #tables-collapsible .container {
+        margin: 0 !important;
+    }
+
     @media (max-width:1100px) { .header-controls{flex-direction:column;gap:8px;padding:8px 10px} .header-left,.header-center,.interval-selector{width:100%;justify-content:center;text-align:center} .search-container{width:100%;justify-content:center} .symbol-title{margin-left:0;margin-top:3px} }
   
     /* ── TELEGRAM CONFIG ── */
@@ -280,6 +334,38 @@
         50%      { box-shadow: 0 0 0 8px rgba(34,158,217,0); }
     }
 
+
+    /* ── BARRA DE HERRAMIENTAS EN FULLSCREEN ── */
+    #fs-toolbar {
+        display: none;
+        position: fixed;
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10001;
+        gap: 8px;
+        background: rgba(10,12,22,0.92);
+        border: 1px solid #3a2a5a;
+        border-radius: 8px;
+        padding: 6px 12px;
+        backdrop-filter: blur(12px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.7);
+    }
+    body.fullscreen-active #fs-toolbar { display: flex !important; align-items: center; }
+    .fs-btn {
+        background: rgba(255,255,255,0.07);
+        border: 1px solid #3a3a5a;
+        color: #ccc;
+        padding: 5px 11px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 10px;
+        font-family: 'Consolas', monospace;
+        transition: all 0.18s;
+        white-space: nowrap;
+    }
+    .fs-btn:hover { background: rgba(156,39,176,0.25); border-color: #9c27b0; color: #ce93d8; }
+    .fs-btn.active { background: rgba(156,39,176,0.3); border-color: #9c27b0; color: #ce93d8; }
   </style>
   <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
 </head>
@@ -288,8 +374,7 @@
     <div class="header-left">
       <div class="search-container hide-when-fullscreen">
         <label for="symbol-search">Buscar par USDT:</label>
-        <input type="text" id="symbol-search" placeholder="Ej: BTC o BTCUSDT" list="symbol-list" autocomplete="off"
-               style="color:#e0e0e0;background:#1a1c2a;border:1px solid #555;padding:4px 8px;font-size:11px;border-radius:4px;width:130px;font-family:Consolas,monospace;">
+        <input type="text" id="symbol-search" placeholder="Ejemplo: BTCUSDT" list="symbol-list" autocomplete="off">
         <datalist id="symbol-list">
             <option value="BTCUSDT"><option value="ETHUSDT"><option value="BNBUSDT">
             <option value="SOLUSDT"><option value="XRPUSDT"><option value="ADAUSDT">
@@ -332,10 +417,26 @@
       </select>
       <button onclick="autoScaleChart()">Auto Scale</button>
     </div>
-      <label for="ema-period" style="margin-left:10px;">EMA:</label>
-      <input type="number" id="ema-period" value="100" min="5" max="500" step="5"
-             style="width:55px;padding:2px 4px;background:#1a1a2e;color:#e0e0e0;border:1px solid #444;border-radius:4px;font-size:11px;"
-             onchange="window._emaPeriod=parseInt(this.value)||100; if(window.candlesData?.length>0){const e=calculateEMA(window.candlesData,window._emaPeriod);if(emaSeries)emaSeries.setData(e);}" />
+  </div>
+
+  <!-- Barra de herramientas en fullscreen -->
+  <div id="fs-toolbar">
+    <span style="color:#555;font-size:9px;margin-right:4px;letter-spacing:1px;">HERRAMIENTAS</span>
+    <button class="fs-btn" id="fs-smc-btn"
+            onclick="smcToggle(document.getElementById('smc-toggle'));document.getElementById('fs-smc-btn').classList.toggle('active')">
+        📐 SMC
+    </button>
+    <button class="fs-btn" id="fs-zones-btn"
+            onclick="toggleInstZonesPanel();document.getElementById('fs-zones-btn').classList.toggle('active')">
+        🏛️ Zonas Inst.
+    </button>
+    <button class="fs-btn" id="fs-clusters-btn"
+            onclick="toggleClusters();document.getElementById('fs-clusters-btn').classList.toggle('active')">
+        📊 Clusters
+    </button>
+    <div style="width:1px;height:18px;background:#333;margin:0 4px;"></div>
+    <button class="fs-btn" onclick="autoScaleChart()" title="Auto escala">↔ Escala</button>
+    <button class="fs-btn" onclick="if(window.refreshInstZones)window.refreshInstZones()" title="Refrescar zonas">↺</button>
   </div>
 
   <div class="chart-container" id="chart-container">
@@ -385,12 +486,12 @@
       <div class="liquidity-controls-stats">
         <div class="liquidity-thresholds-stats">
           <label>Umbral:</label>
-          <input type="text" id="large-threshold" value="50M" style="font-family:'Consolas',monospace;">
+          <input type="text" id="large-threshold" value="10M" style="font-family:'Consolas',monospace;">
           <label>Muy grande:</label>
-          <input type="text" id="very-large-threshold" value="100M" style="font-family:'Consolas',monospace;">
+          <input type="text" id="very-large-threshold" value="500M" style="font-family:'Consolas',monospace;">
           <button class="liquidity-btn" onclick="updateThresholds()">Aplicar</button>
         </div>
-        <div>
+        <div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">
           <button class="liquidity-btn" id="smc-toggle" onclick="smcToggle(this)">📐 SMC: OFF</button>
           <button class="liquidity-btn" onclick="toggleSoundAlerts()" id="sound-toggle">🔊 Sonido: ON</button>
           <button class="liquidity-btn" onclick="toggleClusters()" id="cluster-toggle">📊 Mostrar Clusters</button>
@@ -410,7 +511,10 @@
 
   <div id="alert-container" class="alert-container hide-when-fullscreen"></div>
 
-  <div class="container hide-when-fullscreen">
+  <div id="tables-wrapper" class="hide-when-fullscreen">
+  <div id="tables-handle" onclick="(function(){var w=document.getElementById('tables-wrapper');w.classList.toggle('pinned');})()"></div>
+  <div id="tables-collapsible">
+  <div class="container">
     <div class="panel">
       <div class="title-row">
         <span class="indicator-circle indicator-circle-start" id="asks-indicator-start"></span>
@@ -444,6 +548,8 @@
       </div>
     </div>
   </div>
+  </div><!-- /tables-collapsible -->
+</div><!-- /tables-wrapper -->
 
 <script>
 // ===================================================
@@ -483,7 +589,7 @@ let klineSocket = null;
 let lastCandle = null;
 let lastAlertElement = null;
 let LARGE_ORDER_THRESHOLD = 10000000;
-let VERY_LARGE_ORDER_THRESHOLD = 100000000;
+let VERY_LARGE_ORDER_THRESHOLD = 500000000;
 let liquidityHistory = [];
 const MAX_HISTORY = 100;
 let heatmapEnabled = false;
@@ -576,49 +682,41 @@ let chartLevelsManager = {
 // WEBSOCKET MANAGER
 // ===================================================
 class BinanceWebSocketManager {
-    constructor(symbol='BTCUSDT', useSpot=false) { this.symbol=symbol.toLowerCase(); this.useSpot=useSpot; this.wsInstances=new Map(); this.pingIntervals=new Map(); this.reconnectTimeouts=new Map(); }
+    constructor(symbol='BTCUSDT') { this.symbol=symbol.toLowerCase(); this.wsInstances=new Map(); this.pingIntervals=new Map(); this.reconnectTimeouts=new Map(); }
     connectAll(interval='1h') { this.connectTicker(); this.connectMarkPrice(); this.connectDepth(); this.connectKline(interval); }
     connectTicker() {
         const wsUrl = this.useSpot
             ? `wss://stream.binance.com:9443/ws/${this.symbol}@ticker`
-            : `wss://fstream.binance.com/ws/${this.symbol}@ticker`;
-            this.createWebSocket('ticker',wsUrl,(event)=>{
-                try{
-                    const data=JSON.parse(event.data);
-                    if(data.c!==undefined){
-                        let newPrice=Number(data.c);
-                        const cambio24h=data.P?Number(data.P):0;
-                        markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
-                        if(smcEnabled)updateSMCCandles(newPrice);
-                        // Actualizar formato de precio si es el primer tick del par
-                        if (lastPriceUpdate === Date.now()) updateChartPriceFormat(newPrice);
-                        // Verificar proximidad a zonas institucionales (cada 10s)
-                        if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 30000) {
-                            window._lastTGCheck = Date.now();
-                            // _checkTradeSetupLevels desactivado temporalmente
-                        }
-                        updateHeaderPrice(newPrice,cambio24h);
-                        updateTimestamp(); scheduleTableUpdate(); updateMarketSpread();
-                        // Ticker: SOLO actualiza precio en header y markPriceFutures
-                        // La vela la actualiza el stream @kline (ya viene agregado por Binance)
-                        if (window._rtUpdatePrice) window._rtUpdatePrice(newPrice);
+            : `wss://stream.binancefuture.com/ws/${this.symbol}@ticker`;
+        this.createWebSocket('ticker',wsUrl,(event)=>{
+            try{
+                const data=JSON.parse(event.data);
+                if(data.c!==undefined){
+                    let newPrice=Number(data.c);
+                    const cambio24h=data.P?Number(data.P):0;
+                    markPriceFutures=newPrice; lastPriceUpdate=Date.now(); window._lastTickerPrice=newPrice; if(window._wsHeartbeat)window._wsHeartbeat();
+                    if(smcEnabled)updateSMCCandles(newPrice);
+                    // Actualizar formato de precio si es el primer tick del par
+                    if (lastPriceUpdate === Date.now()) updateChartPriceFormat(newPrice);
+                    // Verificar proximidad a zonas institucionales (cada 10s)
+                    if (!window._lastTGCheck || Date.now()-window._lastTGCheck > 60000) {
+                        window._lastTGCheck = Date.now();
+                        if (window._checkTradeSetupLevels) window._checkTradeSetupLevels(newPrice);
                     }
-                }catch(err){console.error('Error en ticker:',err);}
-            });
-        }
+                    updateHeaderPrice(newPrice,cambio24h);
+                    updateTimestamp(); scheduleTableUpdate(); updateMarketSpread();
+                    // Ticker: SOLO actualiza precio en header y markPriceFutures
+                    // La vela la actualiza el stream @kline (ya viene agregado por Binance)
+                    if (window._rtUpdatePrice) window._rtUpdatePrice(newPrice);
+                }
+            }catch(err){console.error('Error en ticker:',err);}
+        });
+    }
     connectMarkPrice() {
         if (this.useSpot) return;  // Spot no tiene markPrice
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@markPrice@1s`;
         this.createWebSocket('markPrice',wsUrl,(event)=>{
-            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase() && this.symbol===wsManager?.symbol){
-                markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();
-                // Actualizar header con markPrice (necesario para pares solo-futuros como HYPE)
-                const _hdrPrc2=document.getElementById('hdr-price');
-                const _hdrSym2=document.getElementById('hdr-symbol');
-                if(_hdrSym2) _hdrSym2.textContent=symbol;
-                if(_hdrPrc2 && (_hdrPrc2.textContent==='$0.00'||_hdrPrc2.textContent==='Cargando...')){
-                    _hdrPrc2.textContent='$'+markPriceFutures.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
-                }}}catch(err){}
+            try{const data=JSON.parse(event.data); if(data.s===this.symbol.toUpperCase()){markPriceFutures=parseFloat(data.p);lastPriceUpdate=Date.now();updateMarketSpread();}}catch(err){}
         });
     }
     connectDepth() {
@@ -641,13 +739,13 @@ class BinanceWebSocketManager {
 
         // ── Calcular las top-N por USDT y actualizar las variables globales ──
         function rebuildTopOrders(now) {
-            const TOP = 50; // Aumentado para capturar más zonas
+            const TOP = 20;
 
             // ASKS: ordenar por precio ASC, tomar los TOP más grandes en USDT
             const asksArr = [];
             for (const [price, qty] of asksMap) {
                 const usdt = price * qty;
-                if (usdt > 1000) asksArr.push({ price, qty, usdt }); // mín $1000
+                if (usdt > 100) asksArr.push({ price, qty, usdt });
             }
             asksArr.sort((a, b) => b.usdt - a.usdt);
             const topAsks = asksArr.slice(0, TOP);
@@ -656,7 +754,7 @@ class BinanceWebSocketManager {
             const bidsArr = [];
             for (const [price, qty] of bidsMap) {
                 const usdt = price * qty;
-                if (usdt > 1000) bidsArr.push({ price, qty, usdt }); // mín $1000
+                if (usdt > 100) bidsArr.push({ price, qty, usdt });
             }
             bidsArr.sort((a, b) => b.usdt - a.usdt);
             const topBids = bidsArr.slice(0, TOP);
@@ -795,32 +893,22 @@ class BinanceWebSocketManager {
         const existingKline=this.wsInstances.get('kline');
         if(existingKline&&existingKline.readyState!==WebSocket.CLOSED){existingKline.close(1000,'Cambiando intervalo');this.wsInstances.delete('kline');if(this.pingIntervals.has('kline')){clearInterval(this.pingIntervals.get('kline'));this.pingIntervals.delete('kline');}}
         const wsUrl=`wss://stream.binancefuture.com/ws/${this.symbol}@kline_${cleanInterval}`;
-        const _klineId = Date.now(); // ID único para esta conexión
-        window._activeKlineId = _klineId;
         this.createWebSocket('kline',wsUrl,(event)=>{
             try{
                 if(event.data==='pong'||event.data.includes('"pong"'))return;
-                // Ignorar si hay una conexión kline más nueva
-                if(window._activeKlineId !== _klineId) return;
                 const data=JSON.parse(event.data); const kline=data.k; if(!kline)return;
                 const newCandle={time:Math.floor(kline.t/1000),open:parseFloat(kline.o),high:parseFloat(kline.h),low:parseFloat(kline.l),close:parseFloat(kline.c),volume:parseFloat(kline.v)};
                 if(kline.x){const existingIndex=candlesData.findIndex(c=>c.time===newCandle.time); if(existingIndex!==-1)candlesData[existingIndex]=newCandle; else candlesData.push(newCandle); if(candlesData.length>1000)candlesData.shift(); lastCandle=newCandle;}
                 else{if(candlesData.length>0&&candlesData[candlesData.length-1].time===newCandle.time)candlesData[candlesData.length-1]=newCandle; else if(candlesData.length===0||newCandle.time>candlesData[candlesData.length-1].time){candlesData.push(newCandle);if(candlesData.length>1000)candlesData.shift();}}
                 if(candlestickSeries){
                     window.candlesData = candlesData;
-                    // Throttle: actualizar gráfico máximo cada 500ms
-                    const _now = Date.now();
-                    if(!window._lastChartUpdate || _now - window._lastChartUpdate >= 500 || kline.x){
-                        window._lastChartUpdate = _now;
-                        try { candlestickSeries.update(newCandle); } catch(_) {
-                            candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));
-                        }
-                        // EMA solo al cerrar vela
-                        if(kline.x){
-                            const ema100=calculateEMA(candlesData,window._emaPeriod||100);
-                            if(emaSeries)emaSeries.setData(ema100);
-                        }
+                    // Usar update() en vez de setData() para no reconstruir todo cada tick
+                    try { candlestickSeries.update(newCandle); } catch(_) {
+                        // Fallback: setData si update falla
+                        candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));
                     }
+                    const ema100=calculateEMA(candlesData,100);
+                    if(emaSeries)emaSeries.setData(ema100);
                 }
             }catch(err){console.error('Error procesando kline:',err);}
         },true);
@@ -842,38 +930,20 @@ class BinanceWebSocketManager {
                 const pingInterval=setInterval(()=>{
                     if(ws.readyState===WebSocket.OPEN){
                         try{
-                            // Browser maneja WebSocket PING/PONG automáticamente
-                            // No enviar ping manual — causa error 1008
+                            ws.send(JSON.stringify({method:'ping'}));
                         }catch(e){}
                     } else if(ws.readyState===WebSocket.CLOSED){
                         scheduleReconnect();
                     }
                 }, 3 * 60 * 1000);  // cada 3 minutos
                 this.pingIntervals.set(type,pingInterval);
-                if(type==='kline'){
-                    // Solo cargar histórico si no hay velas ya (evita saltos en reconexión)
-                    const needsLoad = !window.candlesData || window.candlesData.length === 0;
-                    if(needsLoad && !window._klineLoading){
-                        window._klineLoading=true;
-                        setTimeout(()=>{
-                            loadHistoricalKlines()
-                                .catch(err=>console.error('Error histórico:',err))
-                                .finally(()=>{ window._klineLoading=false; });
-                        },500);
-                    }
-                }
+                if(type==='kline'){setTimeout(()=>{loadHistoricalKlines().catch(err=>console.error('Error cargando histórico:',err));},1000);}
             };
             ws.onmessage=(event)=>{
                 if(event.data==='pong'||event.data==='ping') return;
                 try{
                     const d=JSON.parse(event.data);
                     if(d.result!==undefined||d.id!==undefined) return; // respuesta de control
-                    // Unwrap combined stream: {"stream":"...","data":{...}}
-                    if(d.stream!==undefined && d.data!==undefined){
-                        const unwrapped=new MessageEvent('message',{data:JSON.stringify(d.data)});
-                        try{onMessageHandler(unwrapped);}catch(err){console.error(`Error procesando ${type}:`,err);}
-                        return;
-                    }
                 }catch(_){}
                 try{onMessageHandler(event);}catch(err){console.error(`Error procesando ${type}:`,err);}
             };
@@ -883,7 +953,8 @@ class BinanceWebSocketManager {
                 if(this.pingIntervals.has(type)){clearInterval(this.pingIntervals.get(type));this.pingIntervals.delete(type);}
                 // Reconectar siempre (excepto cierre manual 1000)
                 if(event.code!==1000){
-                    console.warn(`⚠️ ${type} cerrado (code:${event.code}), reconectando en ${Math.min(1000*Math.pow(2,reconnectAttempt),30000)/1000}s...`);
+                    // 1008 = Binance cierra periódicamente, es normal — no mostrar en consola
+                    if(event.code!==1008) console.warn(`⚠️ ${type} cerrado (code:${event.code})`);
                     scheduleReconnect();
                 }
             };
@@ -892,11 +963,7 @@ class BinanceWebSocketManager {
         // Backoff exponencial: 1s, 2s, 4s, 8s, 16s, 30s (máx)
         const scheduleReconnect=()=>{
             reconnectAttempt++;
-            // Kline: máximo 3 intentos seguidos, luego 30s fijo
-            const delay = type==='kline'
-                ? (reconnectAttempt <= 3 ? 2000 : 30000)
-                : Math.min(1000*Math.pow(2,Math.min(reconnectAttempt-1,5)),30000);
-            console.log(`🔄 Reconectando ${type} en ${delay/1000}s (intento ${reconnectAttempt})...`);
+            const delay=Math.min(1000*Math.pow(2,Math.min(reconnectAttempt-1,5)),30000);
             const timeout=setTimeout(()=>{connect();},delay);
             this.reconnectTimeouts.set(type,timeout);
         };
@@ -919,19 +986,12 @@ function reconnectAllWebSockets() {
     wsManager.disconnectAll();
     setTimeout(()=>{wsManager=new BinanceWebSocketManager(symbol);wsManager.connectAll(currentInt);clearError();},1000);
 }
-
 async function initializeWebSockets() {
     if(wsManager)wsManager.disconnectAll();
 
     // ── Limpiar gráfico completamente al cambiar de par ──
-    markPriceFutures = 0;
+    markPriceFutures = 0;  // reset precio para evitar mitigaciones falsas
     lastPriceUpdate = 0;
-    window.candlesData = []; // reset velas al cambiar par
-    // Reset header para evitar mostrar precio del par anterior
-    const _hdrPrc = document.getElementById('hdr-price');
-    const _hdrSym = document.getElementById('hdr-symbol');
-    if (_hdrPrc) _hdrPrc.textContent = '$0.00';
-    if (_hdrSym) _hdrSym.textContent = symbol;
     window._lastSymbolChange = Date.now();  // timestamp para bloquear mitigaciones temporalmente
     _isFirstLoad = true;  // resetear para que auto-fit al cargar nuevo par
     candlesData = [];
@@ -996,7 +1056,6 @@ async function initializeWebSockets() {
 
 // Verificar si el símbolo existe en Binance Futuros
 async function validateFuturesSymbol(sym) {
-    if (location.protocol === 'file:' || location.protocol === 'https:') return true;
     try {
         const r = await fetch(`https://fapi.binance.com/fapi/v1/ticker/price?symbol=${sym.toUpperCase()}`,
             { signal: AbortSignal.timeout(5000) });
@@ -1004,6 +1063,7 @@ async function validateFuturesSymbol(sym) {
         const data = await r.json();
         return !!data.price;
     } catch(e) {
+        // Si falla la validación, intentar de todos modos
         return true;
     }
 }
@@ -1310,7 +1370,7 @@ function showAlert(message,type) {
     alertDiv.innerHTML=`<span class="alert-time">${new Date().toLocaleTimeString()}</span><span class="alert-message">${message}</span><button class="alert-close" onclick="this.parentElement.remove()">×</button>`;
     document.getElementById('alert-container').prepend(alertDiv);
     if(ALERT_SETTINGS.soundEnabled)playAlertSound(type);
-    setTimeout(()=>{if(alertDiv.parentNode)alertDiv.remove();},60000);
+    setTimeout(()=>{if(alertDiv.parentNode)alertDiv.remove();},4000);
 }
 function playAlertSound(type) {
     try{const audioCtx=new(window.AudioContext||window.webkitAudioContext)(); const oscillator=audioCtx.createOscillator(); const gainNode=audioCtx.createGain();
@@ -1343,7 +1403,7 @@ function initializeChart() {
         const loadingMsg=chartContainer.querySelector('.loading-message'); if(loadingMsg){loadingMsg.style.display='block';loadingMsg.textContent='Inicializando gráfico...';}
         if(chart){chart.remove();chart=null;candlestickSeries=null;emaSeries=null;}
         chart=LightweightCharts.createChart(chartContainer,{
-            width:chartContainer.offsetWidth,height:700,
+            width:chartContainer.offsetWidth,height:900,
             layout:{backgroundColor:'#000000',textColor:'#d1d4dc'},
             grid:{vertLines:{visible:false},horzLines:{visible:false}},
             handleScroll:{mouseWheel:true,pressedMouseMove:true},
@@ -1395,7 +1455,7 @@ async function loadHistoricalKlines() {
         const data=await response.json();
         candlesData=data.map(kline=>({time:Math.floor(kline[0]/1000),open:parseFloat(kline[1]),high:parseFloat(kline[2]),low:parseFloat(kline[3]),close:parseFloat(kline[4]),volume:parseFloat(kline[5]),usdt:parseFloat(kline[7])}));
         if(candlesData.length>1000)candlesData=candlesData.slice(-1000);
-        if(candlestickSeries){window.candlesData = candlesData; candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));const ema100=calculateEMA(candlesData,window._emaPeriod||100);if(emaSeries)emaSeries.setData(ema100);const loadingMsg=document.querySelector('.loading-message');if(loadingMsg)loadingMsg.style.display='none';
+        if(candlestickSeries){window.candlesData = candlesData; candlestickSeries.setData(fillCandleGaps(candlesData,intervalToSeconds(currentInterval)));const ema100=calculateEMA(candlesData,100);if(emaSeries)emaSeries.setData(ema100);const loadingMsg=document.querySelector('.loading-message');if(loadingMsg)loadingMsg.style.display='none';
         // Ajustar precisión decimal según el precio del par
         if (candlesData.length > 0) {
             updateChartPriceFormat(candlesData[candlesData.length-1].close);
@@ -1684,7 +1744,7 @@ function toggleSMCZones() {
 function updateThresholds() {
     const largeInput=document.getElementById('large-threshold'); const veryLargeInput=document.getElementById('very-large-threshold');
     const parseHumanFormat=(text)=>{text=text.toString().trim().toUpperCase();const numPart=text.replace(/[^0-9.]/g,'');const suffix=text.replace(/[0-9.]/g,'');let base=parseFloat(numPart)||0;if(suffix.includes('K'))base*=1000;else if(suffix.includes('M'))base*=1000000;else if(suffix.includes('B'))base*=1000000000;return base;};
-    const finalLarge=parseHumanFormat(largeInput.value)||50000000; const finalVeryLarge=parseHumanFormat(veryLargeInput.value)||100000000;
+    const finalLarge=parseHumanFormat(largeInput.value)||10000000; const finalVeryLarge=parseHumanFormat(veryLargeInput.value)||500000000;
     LARGE_ORDER_THRESHOLD=finalLarge; VERY_LARGE_ORDER_THRESHOLD=finalVeryLarge;
     showAlert(`✅ Umbrales: ${formatUsdt(finalLarge)} / ${formatUsdt(finalVeryLarge)}`,'volume');
     updateTables();
@@ -1894,10 +1954,10 @@ function setupFullscreenButton() {
     fullscreenBtn.addEventListener('click',()=>{
         const isFull=chartSection.classList.toggle('fullscreen-mode'); document.body.classList.toggle('fullscreen-active',isFull);
         fullscreenBtn.innerHTML=isFull?`<svg viewBox="0 0 24 24"><path d="M5 5h5v2H7v3H5V5zm14 0v5h-2V7h-3V5h5zm-5 14h3v-2h2v5h-5v-3zm-4 3H5v-5h2v3h3v2z"/></svg>`:`<svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 7h-3v2h5v-5h-2v3zm-3-7h2V7h3V5h-5v5z"/></svg>`;
-        if(chart){setTimeout(()=>{if(isFull)chart.resize(chartSection.offsetWidth,chartSection.offsetHeight);else chart.resize(chartSection.offsetWidth,700);},100);}
+        if(chart){setTimeout(()=>{if(isFull)chart.resize(chartSection.offsetWidth,chartSection.offsetHeight);else chart.resize(chartSection.offsetWidth,900);},100);}
     });
-    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chartSection.classList.contains('fullscreen-mode')){chartSection.classList.remove('fullscreen-mode');document.body.classList.remove('fullscreen-active');fullscreenBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 7h-3v2h5v-5h-2v3zm-3-7h2V7h3V5h-5v5z"/></svg>`;if(chart)setTimeout(()=>chart.resize(chartSection.offsetWidth,700),100);}});
-    window.addEventListener('resize',()=>{if(chart){if(chartSection.classList.contains('fullscreen-mode'))chart.resize(chartSection.offsetWidth,chartSection.offsetHeight);else chart.resize(chartSection.offsetWidth,700);}});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape'&&chartSection.classList.contains('fullscreen-mode')){chartSection.classList.remove('fullscreen-mode');document.body.classList.remove('fullscreen-active');fullscreenBtn.innerHTML=`<svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm0-4h2V7h3V5H7v5zm10 7h-3v2h5v-5h-2v3zm-3-7h2V7h3V5h-5v5z"/></svg>`;if(chart)setTimeout(()=>chart.resize(chartSection.offsetWidth,900),100);}});
+    window.addEventListener('resize',()=>{if(chart){if(chartSection.classList.contains('fullscreen-mode'))chart.resize(chartSection.offsetWidth,chartSection.offsetHeight);else chart.resize(chartSection.offsetWidth,900);}});
 }
 
 // ===================================================
@@ -1915,22 +1975,20 @@ function setupEventListeners() {
     const asksBody=document.getElementById('asks-body'); const bidsBody=document.getElementById('bids-body');
     if(asksBody)asksBody.addEventListener('click',handleTableClick);
     if(bidsBody)bidsBody.addEventListener('click',handleTableClick);
-    const _searchInput = document.getElementById('symbol-search');
-    function _handleSymbolSearch(val) {
-        const s = val.trim().toUpperCase();
-        if (!s) return;
-        symbol = s.endsWith('USDT') ? s : s + 'USDT';
+    document.getElementById('symbol-search').addEventListener('change',(e)=>{
+        const s=e.target.value.trim().toUpperCase();
+        if(!s) return;
+        symbol = s.endsWith('USDT') ? s : s+'USDT';
         try { localStorage.setItem('last_symbol', symbol); } catch(_) {}
+        // Actualizar nombre en header inmediatamente
         const hdrSym = document.getElementById('hdr-symbol');
         if (hdrSym) hdrSym.textContent = symbol;
-        _searchInput.value = '';
-        _searchInput.placeholder = symbol;
+        // Limpiar campo de búsqueda para el próximo par
+        e.target.value = '';
         initializeWebSockets();
-    }
-    _searchInput.addEventListener('change', e => _handleSymbolSearch(e.target.value));
-    _searchInput.addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); _handleSymbolSearch(e.target.value); } });
+    });
     document.getElementById('interval-select').addEventListener('change',changeChartInterval);
-    window.addEventListener('resize',()=>{if(chart){chart.resize(document.getElementById('chart-container').offsetWidth,700);redrawSelectedLines();}});
+    window.addEventListener('resize',()=>{if(chart){chart.resize(document.getElementById('chart-container').offsetWidth,900);redrawSelectedLines();}});
 }
 function handleTableClick(event) { const cell=event.target.closest('.price-cell'); if(!cell)return; copyPriceCell({target:cell}); }
 function copyPriceCell(event) {
@@ -1945,7 +2003,7 @@ function copyWithFallback(text,cell){const textArea=document.createElement('text
 // UTILITIES
 // ===================================================
 function saveKeyLevels(){const keyLevels={bids:futuresBidsData.filter(b=>b.usdt>=LARGE_ORDER_THRESHOLD),asks:futuresAsksData.filter(a=>a.usdt>=LARGE_ORDER_THRESHOLD),timestamp:Date.now()};localStorage.setItem(`keyLevels_${symbol}`,JSON.stringify(keyLevels));showAlert(`Niveles clave guardados para ${symbol}`,'volume');}
-document.addEventListener('DOMContentLoaded',function(){const largeInput=document.getElementById('large-threshold');const veryLargeInput=document.getElementById('very-large-threshold');if(largeInput){largeInput.value='50M';largeInput.addEventListener('blur',updateThresholds);}if(veryLargeInput){veryLargeInput.value='100M';veryLargeInput.addEventListener('blur',updateThresholds);}});
+document.addEventListener('DOMContentLoaded',function(){const largeInput=document.getElementById('large-threshold');const veryLargeInput=document.getElementById('very-large-threshold');if(largeInput){largeInput.value='10M';largeInput.addEventListener('blur',updateThresholds);}if(veryLargeInput){veryLargeInput.value='500M';veryLargeInput.addEventListener('blur',updateThresholds);}});
 
 // ===================================================
 // 🏛️ ZONAS INSTITUCIONALES MEJORADAS
@@ -2022,43 +2080,29 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
     // BTCUSDT $80k    → thresholds normales
     function getScaledThresholds() {
         const price = markPriceFutures || 1;
-        const sym = (typeof symbol !== 'undefined' ? symbol : '').toUpperCase();
 
-        // ── Thresholds por par (basado en backtesting real) ──
-        if (sym.startsWith('BTC') || price >= 10000) {
-            // BTC: 269 zonas | RETAIL <1M | INST 5M-37M | WHALE >37M
-            return { minUsdtToShow: 1_000_000, institutionalMin: 5_000_000, whaleMin: 37_000_000 };
+        if (price >= 10000) {
+            // BTC range
+            return { minUsdtToShow: 5_000_000, institutionalMin: 20_000_000, whaleMin: 100_000_000 };
+        } else if (price >= 1000) {
+            // ETH range
+            return { minUsdtToShow: 1_000_000, institutionalMin: 5_000_000,  whaleMin:  25_000_000 };
+        } else if (price >= 100) {
+            // SOL, BNB range
+            return { minUsdtToShow:   200_000, institutionalMin:   800_000,  whaleMin:   4_000_000 };
+        } else if (price >= 10) {
+            // LINK, AVAX range
+            return { minUsdtToShow:    50_000, institutionalMin:   200_000,  whaleMin:   1_000_000 };
+        } else if (price >= 1) {
+            // SUSHI, ALGO range
+            return { minUsdtToShow:    10_000, institutionalMin:    50_000,  whaleMin:     200_000 };
+        } else if (price >= 0.1) {
+            // XRP, DOGE range
+            return { minUsdtToShow:     5_000, institutionalMin:    20_000,  whaleMin:     100_000 };
+        } else {
+            // Micro-cap < $0.1
+            return { minUsdtToShow:     1_000, institutionalMin:     5_000,  whaleMin:      20_000 };
         }
-        if (sym.startsWith('ETH') || price >= 1000) {
-            // ETH: 142 zonas | RETAIL <500K | INST 1.2M-16M | WHALE >16M
-            return { minUsdtToShow:   500_000, institutionalMin: 1_200_000, whaleMin: 16_000_000 };
-        }
-        if (sym.startsWith('SOL') || sym.startsWith('BNB') || sym.startsWith('HYPE') || price >= 50) {
-            // SOL/HYPE: 98/31 zonas | RETAIL <200K | INST 535K-3.6M | WHALE >3.6M
-            return { minUsdtToShow:   200_000, institutionalMin:   535_000, whaleMin:  3_600_000 };
-        }
-        if (sym.startsWith('XRP')) {
-            // XRP: 67 zonas (todas WHALE) | RETAIL <200K | INST 382K | WHALE >2.46M
-            return { minUsdtToShow:   200_000, institutionalMin:   382_000, whaleMin:  2_460_000 };
-        }
-        if (sym.startsWith('ADA')) {
-            // ADA: 8 zonas (todas WHALE) | RETAIL <200K | INST 260K | WHALE >1.92M
-            return { minUsdtToShow:   200_000, institutionalMin:   260_000, whaleMin:  1_920_000 };
-        }
-        if (sym.startsWith('LINK') || (price >= 5 && price < 50)) {
-            // LINK: 21 zonas | RETAIL <50K | INST 82K | WHALE >553K
-            return { minUsdtToShow:    50_000, institutionalMin:    82_000, whaleMin:    553_000 };
-        }
-        if (sym.startsWith('ONDO') || (price >= 0.1 && price < 5)) {
-            // ONDO: 19 zonas | RETAIL <50K | INST 87K | WHALE >194K
-            return { minUsdtToShow:    50_000, institutionalMin:    87_000, whaleMin:    194_000 };
-        }
-        if (sym.startsWith('TAC') || price < 0.1) {
-            // TAC: 14 zonas | RETAIL <3K | INST 6K | WHALE >19K
-            return { minUsdtToShow:     3_000, institutionalMin:     6_000, whaleMin:     19_000 };
-        }
-        // Fallback genérico
-        return { minUsdtToShow:    50_000, institutionalMin:   200_000, whaleMin:  1_000_000 };
     }
 
     // ============================================================
@@ -2187,26 +2231,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
     // ============================================================
     // 🎨 2. DIBUJAR ZONAS EN EL GRÁFICO CON LABEL USDT
     // ============================================================
-    
-    // ── Contar visitas históricas de una zona ──
-    function countHistoricalVisits(sym, price, side) {
-        try {
-            const raw = localStorage.getItem(`inst_zones_history_${sym}`);
-            if (!raw) return 0;
-            const history = JSON.parse(raw);
-            const RADIUS = 0.005; // 0.5% radio
-            let visits = 0;
-            Object.values(history).flat().forEach(z => {
-                if (z.side === side &&
-                    z.mitigated &&
-                    Math.abs(z.price - price) / price < RADIUS) {
-                    visits++;
-                }
-            });
-            return visits;
-        } catch(e) { return 0; }
-    }
-
     function drawInstitutionalZonesOnChart(zones) {
         if (!chart || !candlestickSeries) return;
 
@@ -2240,7 +2264,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     width = 1; opacity = 0.40; lineStyle = 2; // punteada = bajo volumen
                 }
 
-                // Verde para bid (soporte), rojo para ask (resistencia)
                 const baseColor = isBid ? `0,255,136` : `255,85,85`;
                 const lineColor = `rgba(${baseColor},${opacity})`;
 
@@ -2266,41 +2289,13 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 // Indicador visual de volumen en el label: más $ = más volumen
                 const volBar = usdt >= 100e6 ? '$$$$' : usdt >= 50e6 ? '$$$' : usdt >= 20e6 ? '$$' : usdt >= 10e6 ? '$' : '';
 
-                // Contar rebotes según temporalidad activa
-                const _rebounds = (()=>{
-                    try {
-                        const _h = JSON.parse(localStorage.getItem(`inst_zones_history_${symbol}`) || '{}');
-                        // Ventana de tiempo según intervalo activo
-                        const _lookbackMs = {
-                            '1m': 2*3600000, '3m': 4*3600000, '5m': 8*3600000,
-                            '15m': 24*3600000, '30m': 2*24*3600000,
-                            '1h': 3*24*3600000, '2h': 5*24*3600000,
-                            '4h': 7*24*3600000, '6h': 10*24*3600000,
-                            '12h': 14*24*3600000, '1d': 30*24*3600000,
-                        }[currentInterval] || 3*24*3600000;
-                        const _cutoff = Date.now() - _lookbackMs;
-                        let count = 0;
-                        Object.entries(_h).forEach(([day, zones]) => {
-                            if (new Date(day).getTime() < _cutoff) return;
-                            zones.forEach(z => {
-                                if (z.mitigated &&
-                                    z.side === zone.side &&
-                                    Math.abs(z.price - zone.price) / zone.price < 0.0015) {
-                                    count++;
-                                }
-                            });
-                        });
-                        return count > 0 ? ` ×${count + 1}` : '';
-                    } catch(_) { return ''; }
-                })();
-
                 lineSeries.createPriceLine({
                     price:             zone.price,
                     color:             `rgba(${baseColor},1)`,
                     lineWidth:         1,
                     lineStyle:         2,
                     axisLabelVisible:  true,
-                    title: `${volBar} ${tierIcon} ${sideLabel} | ${formatPrice(zone.price)} | ${formatUsdt(zone.totalUsdt)} | ${distSign}${distPct}%${_rebounds}${(()=>{
+                    title: `${volBar} ${tierIcon} ${sideLabel} | ${formatPrice(zone.price)} | ${formatUsdt(zone.totalUsdt)} | ${distSign}${distPct}%${(()=>{
     const today = getLocalDate ? getLocalDate() : new Date().toLocaleDateString('sv');
     const histKey = 'inst_zones_history_' + (typeof symbol !== 'undefined' ? symbol : '');
     try {
@@ -2416,7 +2411,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 <button class="alert-close" onclick="this.parentElement.remove()">×</button>
             `;
             container.prepend(alert);
-            setTimeout(() => alert.remove && alert.remove(), 30000);
+            setTimeout(() => alert.remove && alert.remove(), 6000);
         }
 
         // Sonido si está habilitado
@@ -2556,57 +2551,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         zonesPanel = panel;
     }
 
-
-    // ── Guardar TODAS las zonas activas de una vez ──
-    window.saveAllInstZones = function() {
-        const activeZones = (window.institutionalZones || institutionalZones).filter(z => !z.mitigated && (z.tier === 'INST' || z.tier === 'WHALE'));
-        if (!activeZones.length) { alert('No hay zonas activas para guardar'); return; }
-        let saved = 0;
-        // Guardar en localStorage directamente (igual que saveZoneToDaily pero sin renderizar cada vez)
-        const today = getLocalDate();
-        const histKey = ZONES_HISTORY_KEY();
-        const history = JSON.parse(localStorage.getItem(histKey) || '{}');
-        if (!history[today]) history[today] = [];
-
-        activeZones.forEach(zone => {
-            const exists = history[today].some(z => Math.abs(z.price - zone.price) / zone.price < INST_CONFIG.clusterRadius);
-            if (!exists) {
-                history[today].unshift({
-                    id: zone.id || `zone_${Date.now()}_${Math.round(zone.price)}`,
-                    date: today,
-                    savedAt: new Date().toISOString(),
-                    symbol, price: zone.price, side: zone.side,
-                    totalUsdt: zone.totalUsdt, bidUsdt: zone.bidUsdt, askUsdt: zone.askUsdt,
-                    tier: zone.tier, score: zone.score, orderCount: zone.orderCount,
-                    markAtSave: markPriceFutures,
-                    distAtSave: ((zone.price - markPriceFutures) / markPriceFutures * 100).toFixed(2),
-                    status: 'pending', mitigated: false, touchPrice: null, touchTime: null, notes: ''
-                });
-                savedZonePrices.add(Math.round(zone.price * 100));
-                saved++;
-            }
-        });
-
-        localStorage.setItem(histKey, JSON.stringify(history));
-        setTimeout(() => syncSymbolWatchlist(), 500);
-
-        // Visual feedback
-        const btn = document.querySelector('[onclick="window.saveAllInstZones()"]');
-        if (btn) {
-            const orig = btn.textContent;
-            btn.textContent = '✅ ' + saved + ' guardadas';
-            btn.style.background = 'rgba(0,255,100,0.3)';
-            setTimeout(() => { btn.textContent = orig; btn.style.background = 'rgba(0,200,100,0.15)'; }, 2000);
-        }
-        console.log('💾 ' + saved + ' zonas guardadas de ' + activeZones.length);
-        renderZonesPanel();
-        if (typeof drawInstitutionalZonesOnChart === 'function' && window.institutionalZones?.length) {
-            drawInstitutionalZonesOnChart(window.institutionalZones);
-        }
-        if (window.triggerDbSave) window.triggerDbSave();
-        if (window.CloudSync?.enabled) window.CloudSync.push();
-    };
-
     function renderZonesPanel() {
         const panel = document.getElementById('inst-zones-panel');
         if (!panel || panel.style.display === 'none') return;
@@ -2627,10 +2571,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                 </span>
             </div>
             <div style="display:flex; gap:6px; align-items:center;">
-                <button onclick="window.saveAllInstZones()" title="Guardar todas las zonas activas"
-                        style="background:rgba(0,200,100,0.15);border:1px solid #0c6;color:#0f0;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;">
-                    💾 Guardar Todo
-                </button>
                 <button onclick="window.refreshInstZones()" title="Actualizar zonas"
                         style="background:rgba(255,255,255,0.08); border:1px solid #444; color:#aaa; 
                                width:24px; height:24px; border-radius:4px; cursor:pointer; font-size:12px;">↺</button>
@@ -2701,9 +2641,10 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
         // ── Filtro de tier ──
         const _tiers = [
-            { key:'ALL',   label:'Todas',      color:'#888' },
-            { key:'WHALE', label:'🐋 WHALE',   color:'#4dd0e1' },
-            { key:'INST',  label:'🏛️ INST',    color:'#ce93d8' },
+            { key:'ALL',    label:'Todas',       color:'#888' },
+            { key:'WHALE',  label:'🐋 WHALE',    color:'#4dd0e1' },
+            { key:'INST',   label:'🏛️ INST',     color:'#ce93d8' },
+            { key:'RETAIL', label:'📌 RETAIL',   color:'#aaa' },
         ];
         const _tierCount = { ALL: zones.length };
         zones.forEach(z => { _tierCount[z.tier] = (_tierCount[z.tier]||0)+1; });
@@ -2829,9 +2770,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
                 <!-- FILA 5: botones -->
                 <div style="display:flex;gap:6px;">
-                    ${z.tier === 'RETAIL' ? 
-                        `<div style="flex:1;padding:5px 0;text-align:center;font-size:10px;color:#555;border:1px solid #333;border-radius:4px;">📌 RETAIL — no guardable</div>` :
-                        `<button onclick="window.saveInstZoneByPrice(${z.price})"
+                    <button onclick="window.saveInstZoneByPrice(${z.price})"
                             ${isMitigated?'disabled':''}
                             style="flex:1;padding:5px 0;border-radius:4px;font-size:10px;
                                    cursor:${isMitigated?'default':'pointer'};transition:all 0.2s;
@@ -2839,9 +2778,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                                    border:1px solid ${isMitigated?'#444':isSaved?'#ffaa00':'#2196f3'};
                                    color:${isMitigated?'#555':isSaved?'#ffaa00':'#90caf9'};
                                    opacity:${isMitigated?'0.4':'1'};">
-                            ${isMitigated?'💥 Mitigada':isSaved?'✅ '+savedInfo.time:'💾 Guardar'}
-                        </button>`
-                    }
+                        ${isMitigated?'💥 Mitigada':isSaved?'✅ '+savedInfo.time:'💾 Guardar'}
+                    </button>
                     <button onclick="window.drawZoneByPrice(${z.price})"
                             style="flex:1;padding:5px 0;border-radius:4px;font-size:10px;
                                    cursor:pointer;transition:all 0.2s;
@@ -2932,11 +2870,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
             const mit     = zones.filter(z => z.mitigated).length;
             const pending = total - mit;
             const rate    = total > 0 ? Math.round(mit / total * 100) : 0;
-            // Stats por tier
-            const whaleZones = zones.filter(z => z.tier === 'WHALE');
-            const instZones  = zones.filter(z => z.tier === 'INST');
-            const whaleHit   = whaleZones.length > 0 ? Math.round(whaleZones.filter(z=>z.mitigated).length/whaleZones.length*100) : null;
-            const instHit    = instZones.length  > 0 ? Math.round(instZones.filter(z=>z.mitigated).length/instZones.length*100)   : null;
             const isToday = day === getLocalDate();
 
             return `
@@ -2952,10 +2885,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     <span style="color:#ff5555;">💥 ${mit} mitigadas</span>
                     <span style="color:#ffaa00;">⏳ ${pending} pendientes</span>
                     <span style="color:${rate>=60?'#00ff88':rate>=30?'#ffaa00':'#888'};">✅ ${rate}% hit</span>
-                </div>
-                <div style="display:flex; gap:10px; font-size:10px; margin-top:4px;">
-                    ${whaleHit !== null ? `<span style="color:#4dd0e1;">🐋 WHALE: ${whaleHit}% (${whaleZones.length})</span>` : ''}
-                    ${instHit  !== null ? `<span style="color:#ce93d8;">🏛️ INST: ${instHit}% (${instZones.length})</span>` : ''}
                 </div>
                 ${total > 0 ? `
                 <div style="margin-top:7px; height:4px; background:#111; border-radius:2px;">
@@ -3063,7 +2992,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         if (_symWS.has(sym)) return;   // ya conectado
 
         const ws = new WebSocket(
-            `wss://stream.binance.com/ws/${sym.toLowerCase()}@ticker`
+            `wss://stream.binancefuture.com/ws/${sym.toLowerCase()}@ticker`
         );
 
         ws.onopen = () => {
@@ -3082,15 +3011,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                         high: prev ? Math.max(prev.high || price, price) : price,
                         ts:   Date.now(),
                     });
-                    window._watchlistPrices = window._watchlistPrices || {};
-                    window._watchlistPrices[sym] = price;
-                    // Verificar zonas cada 5 minutos por par
-                    window._lastZoneCheck = window._lastZoneCheck || {};
-                    const _nt = Date.now();
-                    if (!window._lastZoneCheck[sym] || _nt - window._lastZoneCheck[sym] > 300000) {
-                        window._lastZoneCheck[sym] = _nt;
-                        checkZonesForSymbol(sym, price);
-                    }
+                    // Verificar zonas institucionales guardadas
+                    checkZonesForSymbol(sym, price);
                     // Verificar zonas SMC (Fibonacci, FVG, OB, AOI) — solo para el par activo
                     if (sym === symbol && window.SMC) SMC.checkProximity(price);
                 }
@@ -3138,7 +3060,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
                     .some(z => !z.mitigated && z.status !== 'mitigated');
                 if (hasPending) {
                     activeSyms.add(sym);
-
+                    if (!_symWS.has(sym)) connectSymbolTicker(sym);
                 }
             } catch(e) {}
         }
@@ -3147,87 +3069,158 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         for (const sym of _symWS.keys()) {
             if (!activeSyms.has(sym)) disconnectSymbolTicker(sym);
         }
-        // NOTA: startWatchlistMonitor en Script 3 maneja los WebSockets de precio
-        // No conectar tickers adicionales aquí para evitar duplicados
 
         console.log(`📡 Watchlist activo: ${[...activeSyms].join(', ')} (${activeSyms.size} pares)`);
-        // Fetch precio actual via REST para poblar _watchlistPrices inmediatamente
-        activeSyms.forEach(sym => {
-            if (sym === symbol) return;
-            if (window._watchlistPrices?.[sym]) return; // ya tiene precio
-            fetch(`https://fapi.binance.com/fapi/v1/ticker/price?symbol=${sym}`)
-                .then(r => r.json()).then(d => {
-                    if (d.price) {
-                        window._watchlistPrices = window._watchlistPrices || {};
-                        window._watchlistPrices[sym] = parseFloat(d.price);
-                    }
-                }).catch(()=>{});
-        });
-
-        // Cargar velas 1h para todos los pares activos (necesario para filtros Mxwll)
-        activeSyms.forEach(sym => {
-            if (sym === symbol) return; // par activo ya tiene candlesData
-            const cacheKey = `${sym}_1h`;
-            const now = Date.now();
-            // Solo cargar si no hay caché o tiene más de 15 min
-            if (!window._fiboCache[cacheKey] || now - window._fiboCache[cacheKey].ts > 120*60*1000) {
-                fetch(`https://fapi.binance.com/fapi/v1/klines?symbol=${sym}&interval=1h&limit=100`)
-                    .then(r => r.json())
-                    .then(data => {
-                        if (!Array.isArray(data)) return;
-                        window._fiboCache[cacheKey] = {
-                            candles: data.map(k => ({
-                                time:  k[0]/1000,
-                                open:  parseFloat(k[1]),
-                                high:  parseFloat(k[2]),
-                                low:   parseFloat(k[3]),
-                                close: parseFloat(k[4]),
-                            })),
-                            ts: Date.now()
-                        };
-                        console.log(`📊 Velas 1h cargadas: ${sym} (${window._fiboCache[cacheKey].candles.length} velas)`);
-                    })
-                    .catch(() => {});
-            }
-        });
-
         return activeSyms;
     }
 
     // ── Verificar zonas para un símbolo (llamado por el WS en tiempo real) ──
     function checkZonesForSymbol(sym, currentPrice) {
-        // Solo detecta mitigaciones — sin alertas TG
         const histKey = `inst_zones_history_${sym}`;
         let raw;
-        try { raw = localStorage.getItem(histKey); } catch(e) { return; }
+        try { raw = localStorage.getItem(histKey); }
+        catch(e) { return; }
         if (!raw) return;
+
         let history;
-        try { history = JSON.parse(raw); } catch(e) { return; }
+        try { history = JSON.parse(raw); }
+        catch(e) { return; }
+
+        // Días a revisar (hoy + ayer + anteayer)
+        const daysToCheck = [];
+        for (let d = 0; d <= 2; d++) {
+            const dt = new Date();
+            dt.setDate(dt.getDate() - d);
+            daysToCheck.push(
+                dt.getFullYear() + '-' +
+                String(dt.getMonth()+1).padStart(2,'0') + '-' +
+                String(dt.getDate()).padStart(2,'0')
+            );
+        }
 
         let anyChange = false;
-        Object.keys(history).forEach(day => {
+
+        daysToCheck.forEach(day => {
             (history[day] || []).forEach(zone => {
                 if (zone.mitigated || zone.status === 'mitigated') return;
+
                 const isAsk = zone.side === 'ask';
-                const buffer = 0.0015;
-                const touched = isAsk
+                const buffer = INST_CONFIG.mitigationPct;
+
+                // ── 1. MITIGACIÓN EXACTA ──
+                const mitigated = isAsk
                     ? currentPrice >= zone.price * (1 - buffer)
                     : currentPrice <= zone.price * (1 + buffer);
-                if (touched) {
-                    zone.mitigated = true;
-                    zone.status = 'mitigated';
+
+                if (mitigated) {
+                    zone.mitigated  = true;
+                    zone.status     = 'mitigated';
                     zone.touchPrice = currentPrice;
-                    zone.touchTime = new Date().toISOString();
+                    zone.touchTime  = new Date().toISOString();
                     anyChange = true;
-                    showMitigationAlert({ ...zone }, currentPrice);
+
+                    console.log(`💥 [${sym}] ${zone.side.toUpperCase()} @ ${formatPrice(zone.price)} MITIGADA`);
+
+                    // Solo mostrar alerta si el precio de toque es coherente (max 15%)
+                    const _mitRatio = Math.abs(currentPrice - zone.price) / zone.price;
+                    if (_mitRatio <= 0.15) {
+                        showMitigationAlert({ ...zone }, currentPrice);
+                    } else {
+                        console.warn(`⚠️ Mitigación ignorada — precio incoherente: zona ${zone.price} vs precio ${currentPrice} (${(_mitRatio*100).toFixed(1)}%)`);
+                    }
                     if (sym !== symbol) _showCrossSymbolBanner(sym, zone, currentPrice, '💥 ZONA MITIGADA');
+
+                    // Telegram
+                    _sendMitigationTelegram(sym, zone, currentPrice);
+
+                    return;
+                }
+
+                // ── 2. ALERTAS DE PROXIMIDAD (preventivas) ──
+                const distPct = Math.abs(currentPrice - zone.price) / zone.price;
+
+                // Solo alertar si el precio se ACERCA (dirección correcta)
+                const approaching = isAsk
+                    ? currentPrice < zone.price   // precio subiendo hacia ASK
+                    : currentPrice > zone.price;  // precio bajando hacia BID
+
+                if (!approaching) return;
+
+                for (const level of PROXIMITY_LEVELS) {
+                    if (distPct <= level.pct) {
+                        const alertKey = `${sym}_${Math.round(zone.price)}_${level.key}`;
+                        const lastSent = _alertSent.get(alertKey) || 0;
+
+                        const _now = Date.now();
+                        const _globalOk = (_now - _lastGlobalAlert) > GLOBAL_COOLDOWN_MS;
+                        if (_now - lastSent > ALERT_COOLDOWN_MS && _globalOk) {
+                            _alertSent.set(alertKey, _now);
+                            _lastGlobalAlert = _now;
+
+                            console.log(`${level.emoji} [${sym}] Zona ${zone.side} @ ${formatPrice(zone.price)} — ${level.label}`);
+
+                            // Alerta visual en pantalla
+                            _showProximityAlert(sym, zone, currentPrice, level);
+
+                            // Al nivel INMINENTE (0.3%): señal completa de entrada
+                            if (level.key === 'imminent' && sym === symbol && typeof TradePanel !== 'undefined') {
+                                setTimeout(() => {
+                                    // Abrir panel de setup
+                                    TradePanel.openForZone(zone);
+
+                                    // Enviar señal COMPLETA de entrada solo si cumple condiciones
+                                    const evalTS  = evaluateZonePriority(zone, symbol);
+                                    const setup   = TradePanel.calculate(zone, currentPrice);
+                                    const tierIcon= zone.tier==='WHALE'?'🐋':zone.tier==='INST'?'🏛️':'📌';
+                                    const dir     = zone.side==='bid' ? '🟢 LONG (Soporte)' : '🔴 SHORT (Resistencia)';
+                                    const fp      = formatPrice;
+                                    const smc     = evalTS.hasConfluence ? `📐 SMC: ${evalTS.smcLevels?.join(' · ')||''}` : null;
+
+                                    // Solo enviar si WHALE o INST (≥60% prob) - RETAIL ignorado
+                                    if (evalTS.send && window.TG?.cfg?.enabled && zone.tier !== 'RETAIL') {
+                                        window.TG.send([
+                                            `🚨 SEÑAL DE ENTRADA`,
+                                            ``,
+                                            `Par: ${sym}`,
+                                            `${dir}`,
+                                            `Zona: ${fp(zone.price)} ${tierIcon} ${zone.tier}`,
+                                            `Volumen: ${formatUsdt(zone.totalUsdt)} USDT`,
+                                            smc,
+                                            ``,
+                                            `📊 TRADE SETUP:`,
+                                            `🎯 Entrada:  ${fp(setup.entry)}`,
+                                            `⛔ Stop:     ${fp(setup.sl)}  (-${setup.riskPct}%)`,
+                                            ``,
+                                            `✅ TP1 1:1 → ${fp(setup.tp1)}  (+${(Math.abs(setup.tp1-setup.entry)/setup.entry*100).toFixed(2)}%)`,
+                                            `✅ TP2 1:2 → ${fp(setup.tp2)}  (+${(Math.abs(setup.tp2-setup.entry)/setup.entry*100).toFixed(2)}%)`,
+                                            `✅ TP3 1:3 → ${fp(setup.tp3)}  (+${(Math.abs(setup.tp3-setup.entry)/setup.entry*100).toFixed(2)}%)`,
+                                            ``,
+                                            `🕐 ${new Date().toLocaleTimeString('es-ES')}`,
+                                        ].filter(Boolean).join('\n')).catch(()=>{});
+                                        console.log('✈️ Señal de entrada enviada al Telegram');
+                                    }
+                                }, 300);
+                            }
+
+                            // Telegram de proximidad
+                            _sendProximityTelegram(sym, zone, currentPrice, level);
+                        }
+                        break;  // solo el nivel más cercano
+                    }
                 }
             });
         });
 
         if (anyChange) {
             try { localStorage.setItem(histKey, JSON.stringify(history)); } catch(e) {}
+            // Refrescar UI
             if (sym === symbol) renderZonesPanel();
+            const btOverlay = document.getElementById('bt-overlay');
+            if (btOverlay && btOverlay.style.display !== 'none' && typeof BT !== 'undefined') {
+                BT.allHistory = BT.getAllSymbolsHistory();
+                if (typeof renderBtSidebarContent === 'function') renderBtSidebarContent();
+                if (typeof updateBtStatsBar === 'function') updateBtStatsBar();
+            }
         }
     }
 
@@ -3717,12 +3710,7 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
 
         console.log(`✅ Nueva sesión: ${today} | Historial de ayer conservado en Backtesting`);
     }
-    window.checkDailyReset = function() {
-        if (window._dailyResetRunning) return;
-        window._dailyResetRunning = true;
-        checkDailyReset();
-        setTimeout(() => { window._dailyResetRunning = false; }, 5000);
-    };
+    window.checkDailyReset = checkDailyReset;
 
 
     // Guardar zona por precio (para cuando el índice filtrado no coincide con el array original)
@@ -3851,8 +3839,8 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }, 500);
 
         // Sincronizar watchlist de WS al arrancar y cada 30s
-
-
+        setTimeout(() => syncSymbolWatchlist(), 2000);
+        setInterval(() => syncSymbolWatchlist(), 30000);
 
         // Los Sets savedZonePrices/drawnZonePrices son de SESIÓN
         // Al arrancar empiezan vacíos → "✅ Guardada" solo aparece
@@ -3863,12 +3851,12 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         setInterval(checkDailyReset, 60000);
         checkDailyReset();   // verificar al arrancar
 
-        // Auto-refresh de zonas cada 10 segundos
+        // Auto-refresh de zonas cada 30 segundos
         setInterval(() => {
-            if (markPriceFutures > 0 && chart) {
+            if (institutionalZones.length === 0 && markPriceFutures > 0) {
                 window.refreshInstZones();
             }
-        }, 10000);
+        }, 30000);
 
         // Primer refresh cuando haya precio
         const waitPrice = setInterval(() => {
@@ -3879,30 +3867,6 @@ document.addEventListener('DOMContentLoaded',function(){const largeInput=documen
         }, 500);
 
         console.log('✅ Sistema de zonas institucionales listo');
-
-    // ── Estadísticas históricas por par/tier ──
-    function getHistoricalStats(sym, tier) {
-        try {
-            const raw = localStorage.getItem(`inst_zones_history_${sym}`);
-            if (!raw) return null;
-            const history = JSON.parse(raw);
-            const zones = Object.values(history).flat()
-                .filter(z => !tier || z.tier === tier);
-            if (zones.length < 3) return null;
-            const mitigated = zones.filter(z => z.mitigated).length;
-            const hitRate = Math.round((mitigated / zones.length) * 100);
-            const whaleZones = zones.filter(z => z.tier === 'WHALE');
-            const instZones  = zones.filter(z => z.tier === 'INST');
-            const whaleHit = whaleZones.length > 0
-                ? Math.round((whaleZones.filter(z=>z.mitigated).length / whaleZones.length)*100) : null;
-            const instHit = instZones.length > 0
-                ? Math.round((instZones.filter(z=>z.mitigated).length / instZones.length)*100) : null;
-            return { hitRate, total: zones.length, mitigated, whaleHit, instHit,
-                     whaleCount: whaleZones.length, instCount: instZones.length };
-        } catch(e) { return null; }
-    }
-
-    window.getHistoricalStats = getHistoricalStats;
     }
 
     // Añadir animación al CSS
@@ -3965,7 +3929,7 @@ window.TG_FILTER = {
         const s = sym.toUpperCase().replace('USDT','').replace('USDC','').replace('BUSD','');
 
         // ── ALTO VOLUMEN (>$1B diario) ──
-        if (['BTC'].includes(s))                    return 8e6;  // BTC: 8M
+        if (['BTC'].includes(s))                    return 7e6;  // BTC: 7M
         if (['ETH'].includes(s))                    return 5e6;  // ETH: 5M
         if (['BNB'].includes(s))                    return 4e6;  // BNB: 4M
 
@@ -4068,15 +4032,11 @@ function evaluateZonePriority(zone, pairSym) {
 const TG = {
     _key: 'tg_config_global',
     _logKey: 'tg_log_global',
-    cfg: { token: '7554956081:AAE44ccdWFl3EOvR4t2OsIXJoEaBQe25TQ0', chatId: '5727497529', enabled: true },
+    cfg: { token: '', chatId: '', enabled: false },
     log: [],
 
     load() {
         try { const s = localStorage.getItem(this._key); if (s) this.cfg = JSON.parse(s); } catch(_) {}
-        // Defaults si no hay config guardada
-        if (!this.cfg.token) this.cfg.token = '7554956081:AAE44ccdWFl3EOvR4t2OsIXJoEaBQe25TQ0';
-        if (!this.cfg.chatId) this.cfg.chatId = '5727497529';
-        if (!this.cfg.enabled) this.cfg.enabled = true;
         try { const s = localStorage.getItem(this._logKey); if (s) this.log = JSON.parse(s); } catch(_) {}
     },
 
@@ -4701,11 +4661,7 @@ function renderBtSidebarContent() {
 }
 
 function renderSignalsLegend() {
-    const allLog = JSON.parse(localStorage.getItem('tg_alerts_log') || '[]');
-    // Filtrar por símbolo si hay uno seleccionado en BT
-    const log = BT.currentSymbol
-        ? allLog.filter(a => a.pair === BT.currentSymbol)
-        : allLog;
+    const log = JSON.parse(localStorage.getItem('tg_alerts_log') || '[]');
     const total   = log.filter(a => a.result !== 'PENDING').length;
     const wins    = log.filter(a => ['TP1','TP2','TP3'].includes(a.result)).length;
     const sl_hits = log.filter(a => a.result === 'SL').length;
@@ -4851,9 +4807,8 @@ function renderBtZonesList() {
     }
 
     // Separar pendientes y mitigadas
-    // Solo INST y WHALE en backtesting
-    const pending   = zonesToShow.filter(z => (!z.mitigated && z.status !== 'mitigated') && (z.tier==='INST'||z.tier==='WHALE'));
-    const mitigated = zonesToShow.filter(z =>  (z.mitigated || z.status === 'mitigated') && (z.tier==='INST'||z.tier==='WHALE'));
+    const pending   = zonesToShow.filter(z => !z.mitigated && z.status !== 'mitigated');
+    const mitigated = zonesToShow.filter(z =>  z.mitigated || z.status === 'mitigated');
 
     const renderCard = (zone) => {
         const isBid    = zone.side === 'bid';
@@ -5621,8 +5576,7 @@ const SMC = {
             if (f.ext) return SMC.cfg.showFibExt !== false;
             return SMC.cfg.showFibRet !== false;
         });
-        return { levels: filteredLevels, high: realHigh, low: realLow, isBear, y1, y2, sub,
-            fib: lvl => sub * lvl + y2 };  // exponer función fib para uso externo
+        return { levels: filteredLevels, high: realHigh, low: realLow, isBear, y1, y2, sub };
     },
 
     // ══════════════════════════════════════════════
@@ -6132,7 +6086,7 @@ const SMC = {
         if (document.getElementById('smc-panel')) return;
         const div = document.createElement('div');
         div.id = 'smc-panel';
-        div.style.cssText = 'position:absolute;top:8px;left:8px;width:200px;background:rgba(12,12,28,0.97);border:1px solid #6a1b9a;border-radius:8px;z-index:9999;font-family:Consolas,monospace;font-size:10px;color:#ccc;padding:0 0 8px 0;';
+        div.style.cssText = 'position:absolute;top:60px;left:8px;width:200px;background:rgba(12,12,28,0.97);border:1px solid #6a1b9a;border-radius:8px;z-index:9999;font-family:Consolas,monospace;font-size:10px;color:#ccc;padding:0 0 8px 0;';
         div.innerHTML = `
             <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:rgba(156,39,176,0.25);border-bottom:1px solid #2a2a4a;cursor:move;">
                 <span style="font-weight:700;color:#ce93d8;">📐 SMC</span>
@@ -6209,7 +6163,7 @@ const TradePanel = {
         const isBid  = zone.side === 'bid';
         // Entry = precio de la ZONA (donde está la orden institucional)
         const entry  = zone.price;
-        const SL_PCT = 0.020;
+        const SL_PCT = 0.015;
         const sl     = isBid ? entry * (1 - SL_PCT) : entry * (1 + SL_PCT);
         const risk   = Math.abs(entry - sl);
         const tp1    = isBid ? entry + risk      : entry - risk;
@@ -6346,7 +6300,7 @@ const TradePanel = {
         if (window.clearActiveTradeSetup) window.clearActiveTradeSetup();
     },
     sendTelegram(setup) {
-        return; // desactivado
+        if (!window.TG?.cfg?.enabled) return;
         const { zone, isBid, entry, sl, tp1, tp2, tp3, riskPct, smc } = setup;
         const ti = zone.tier==='WHALE'?'🐋':zone.tier==='INST'?'🏛️':'📌';
         window.TG.send([
@@ -6634,7 +6588,197 @@ window._tpSlHit          = {};     // niveles ya alertados
 // Mapa: key → timestamp del último alerta (4 horas de bloqueo)
 window._tgZoneTimestamps = window._tgZoneTimestamps || {};
 
-window._checkTradeSetupLevels = function(price) { /* desactivado — usa _instScanner */ };
+
+// ── Sesión trading (disponible inmediatamente) ──
+if (!window.getTradingSession) {
+    window.getTradingSession = function() {
+        const ny = new Date(new Date().toLocaleString('en-US', {timeZone:'America/New_York'}));
+        const t = ny.getHours() + ny.getMinutes()/60;
+        if (t >= 9.5  && t < 17)  return { name:'New York', quality:'HIGH', color:'#f24968' };
+        if (t >= 3    && t < 11.5) return { name:'London',   quality:'HIGH', color:'#F2B807' };
+        if (t >= 20   || t < 2)    return { name:'Asia',     quality:'HIGH', color:'#14D990' };
+        return { name:'Dead Zone', quality:'HIGH', color:'#888888' };
+    };
+    window.isHighQualitySession = function() { return true; };
+}
+window._checkTradeSetupLevels = function(price) {
+    if (!window.TG?.cfg?.enabled) { console.log('🔕 TG desactivado'); return; }
+    // Fallback: usar precio del ticker si markPrice no disponible
+    const _price = price || window.markPriceFutures || window._lastTickerPrice || 0;
+    if (!_price || !window.institutionalZones?.length) {
+        console.log(`🔕 Sin precio o zonas: price=${_price} zones=${window.institutionalZones?.length||0}`);
+        return;
+    }
+    price = _price;
+    if (!window._obReady) { console.log('⏳ OB no listo aún'); return; }
+
+    // Fallback si getTradingSession aún no cargó
+    const _getSession = window.getTradingSession || function() { return { name:'Active', quality:'HIGH' }; };
+    const session = _getSession();
+    console.log(`📊 Check TG: precio=${price} sesión=${session.name}(${session.quality}) zonas=${window.institutionalZones.length}`);
+    if (session.quality === 'AVOID') {
+        console.log(`⏸️ TG bloqueado: ${session.name}`);
+        return;
+    }
+
+    const PROX_PCT   = 0.005; // 0.5%
+    const BLOCK_TIME = 4 * 60 * 60 * 1000; // 4 horas sin repetir
+    const now        = Date.now();
+    // WHALE (85%) + INST (65%) — ambas >=65% de probabilidad
+    const zones = window.institutionalZones.filter(z => !z.mitigated && (z.tier === 'WHALE' || z.tier === 'INST'));
+
+    // Zonas cercanas — validación direccional + persistencia + número redondo
+    const near = zones.filter(z => {
+        if (Math.abs(price - z.price) / z.price > PROX_PCT) return false;
+        const isBidZ = z.side === 'bid';
+        if (isBidZ  && price < z.price) return false;
+        if (!isBidZ && price > z.price) return false;
+        // Filtro de calidad: zona debe llevar ≥15 min en el libro O ser número redondo
+        const persist = z.persistenceMin || 0;
+        const isRound = z.isRoundNumber || false;
+        if (persist < 15 && !isRound) return false;
+        return true;
+    });
+    if (!near.length) return;
+
+    // Seleccionar la MEJOR zona: WHALE > INST, luego mayor volumen
+    const tierScore = z => z.tier === 'WHALE' ? 2 : z.tier === 'INST' ? 1 : 0;
+    const zone = near.reduce((best, z) => {
+        const ts = tierScore(z), tb = tierScore(best);
+        if (ts > tb) return z;
+        if (ts === tb && (z.totalUsdt||0) > (best.totalUsdt||0)) return z;
+        return best;
+    }, near[0]);
+
+    // Bloquear dirección opuesta del mismo par por 2 horas
+    const pairDirKey = `dir_${symbol}_${zone.side}`;
+    const pairOppKey = `dir_${symbol}_${zone.side === 'bid' ? 'ask' : 'bid'}`;
+    const TWO_HOURS  = 7200000;
+    window._tgZoneTimestamps = window._tgZoneTimestamps || {};
+    if (window._tgZoneTimestamps[pairOppKey] &&
+        Date.now() - window._tgZoneTimestamps[pairOppKey] < TWO_HOURS) {
+        const oppTime = Math.round((Date.now()-window._tgZoneTimestamps[pairOppKey])/60000);
+        console.log(`⏸️ Dirección opuesta bloqueada: ${symbol} (hace ${oppTime}min)`);
+        return;
+    }
+
+    // Verificar estructura CHoCH/BoS (confirmación de dirección)
+    const struct = window.candlesData?.length > 20
+        ? window.detectStructure(window.candlesData, 50)
+        : null;
+    const isBidZone = zone.side === 'bid';
+    // CHoCH/BoS: solo bloquea si hay suficientes velas Y estructura contraria clara
+    if (struct?.structure) {
+        if (isBidZone  && struct.confirmesShort) { console.log('⏸️ TG LONG bloqueado: estructura bajista activa'); return; }
+        if (!isBidZone && struct.confirmsLong)   { console.log('⏸️ TG SHORT bloqueado: estructura alcista activa'); return; }
+    }
+    if (struct) console.log(`📐 Estructura: ${struct.structure?.label || 'neutral'}`);
+
+    // Triple confluencia: FVG + AOI (mínimo 2 de 3 factores)
+    const triple = window.checkTripleConfluence(zone.price, zone.side, price, window.candlesData);
+    if (triple.score < 2) {
+        console.log(`⏸️ TG bloqueado: confluencia insuficiente (${triple.score}/3) - ${triple.factors.join(', ')}`);
+        return;
+    }
+    console.log(`✅ Triple confluencia: ${triple.score}/3 — ${triple.factors.join(' + ')}`)
+
+    // Clave agrupada: redondear al 0.5% del precio para tratar zonas cercanas como una sola
+    const _bucket = zone.price > 10000 ? 500   // BTC: grupos de 500
+                  : zone.price > 1000  ? 50    // ETH: grupos de 50
+                  : zone.price > 100   ? 5     // SOL: grupos de 5
+                  : 1;
+    const keyBase = `${Math.round(zone.price/_bucket)}_${symbol}`;
+
+    // Bloqueo de 4 horas — NO re-alertar aunque el precio siga cerca
+    if (_tgZoneTimestamps[keyBase] && now - _tgZoneTimestamps[keyBase] < BLOCK_TIME) return;
+    window._tgZoneTimestamps[keyBase] = now;
+
+    // Enviar Telegram con setup completo
+    if (window.TradePanel) {
+        try {
+            const setup = TradePanel.calculate(zone, price);
+            if (!setup) return;
+            const { entry, sl, tp1, tp2, tp3, riskPct } = setup;
+            const isBid = zone.side === 'bid';
+            const ti  = zone.tier==='WHALE'?'🐋':zone.tier==='INST'?'🏛️':'📌';
+            const dir = isBid ? '🟢 LONG' : '🔴 SHORT';
+            const fp  = formatPrice;
+            const pct = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
+            const dist = (Math.abs(price-zone.price)/zone.price*100).toFixed(2);
+            const now = new Date().toLocaleTimeString('es-ES');
+            // Calidad de zona
+            const persistMin = zone.persistenceMin || 0;
+            const session = window.getTradingSession();
+            const sessionEmoji = session.name === 'New York' ? '🇺🇸' : session.name === 'London' ? '🇬🇧' : '🌏';
+            const structLabel = struct?.structure ? `📐 ${struct.structure.label}` : '';
+            const tripleC = window.checkTripleConfluence(zone.price, zone.side, price, window.candlesData);
+            const confLine = tripleC.factors.slice(1).join(' + '); // Skip primer factor (zona inst)
+            const qualityLine = [
+                persistMin >= 15  ? `⏱️ ${persistMin}m en libro` : '',
+                zone.isRoundNumber ? '🎯 Redondo' : '',
+                `${sessionEmoji} ${session.name}`,
+                structLabel,
+                confLine ? `⚡ ${confLine}` : '',
+            ].filter(Boolean).join(' · ');
+
+            const _rr1 = (Math.abs(tp1-entry)/Math.abs(entry-sl)).toFixed(1);
+            const _rr2 = (Math.abs(tp2-entry)/Math.abs(entry-sl)).toFixed(1);
+            const _rr3 = (Math.abs(tp3-entry)/Math.abs(entry-sl)).toFixed(1);
+            const _side = isBid ? '📈' : '📉';
+            const _sep  = '─────────────────';
+            const _spreadSt = window.getSpreadStatus?.(symbol);
+
+            window.TG.send([
+                `${_side} ZONA INSTITUCIONAL`,
+                `Par: ${symbol}  ${dir}  ${ti} ${zone.tier}`,
+                _sep,
+                `📊 Zona:    ${fp(zone.price)}`,
+                `💰 Volumen: ${formatUsdt(zone.totalUsdt)} USDT`,
+                `📏 Dist:    ${dist}%`,
+                _spreadSt ? `${_spreadSt.status} ${_spreadSt.label}` : null,
+                qualityLine ? `ℹ️ ${qualityLine}` : null,
+                _sep,
+                `🎯 Entrada: ${fp(entry)}`,
+                `⛔ SL:      ${fp(sl)}  (${riskPct}%)`,
+                _sep,
+                `✅ TP1: ${fp(tp1)}  R:R ${_rr1}:1`,
+                `✅ TP2: ${fp(tp2)}  R:R ${_rr2}:1`,
+                `✅ TP3: ${fp(tp3)}  R:R ${_rr3}:1`,
+                _sep,
+                `🕐 ${now}`,
+            ].filter(l => l !== null).join('\n')).then(() => {
+                // Guardar alerta para tracking de efectividad
+                try {
+                    const alertRecord = {
+                        id:        Date.now(),
+                        pair:      symbol,
+                        date:      new Date().toLocaleDateString('sv'),
+                        time:      new Date().toLocaleTimeString('es-ES'),
+                        dir:       isBid ? 'LONG' : 'SHORT',
+                        tier:      zone.tier,
+                        zonePrice: zone.price,
+                        entry, sl, tp1, tp2, tp3,
+                        dist:      parseFloat(dist),
+                        volume:    zone.totalUsdt || 0,
+                        result:    'PENDING',
+                        hitPrice:  null,
+                        hitTime:   null,
+                    };
+                    const alertKey = 'tg_alerts_log';
+                    const existing = JSON.parse(localStorage.getItem(alertKey) || '[]');
+                    existing.push(alertRecord);
+                    if (existing.length > 500) existing.splice(0, existing.length - 500);
+                    localStorage.setItem(alertKey, JSON.stringify(existing));
+                    // Registrar dirección del par para bloquear opuesta
+                    window._tgZoneTimestamps[`dir_${symbol}_${zone.side}`] = Date.now();
+                    console.log(`📝 Alerta registrada: ${symbol} ${isBid?'LONG':'SHORT'} @ ${fp(zone.price)}`);
+                } catch(e2) {}
+            }).catch(()=>{});
+        } catch(e) {}
+    }
+};
+
+
 window.setActiveTradeSetup = function(setup) {
     window._activeTradeSetup = setup;
 };
@@ -6678,7 +6822,7 @@ window.clearActiveTradeSetup = function() {
             if (!wsManager) return;
             wsManager.wsInstances.forEach((ws, type) => {
                 if (ws && ws.readyState === WebSocket.OPEN) {
-                    // ping eliminado — causa 1008
+                    try { ws.send(JSON.stringify({ method: 'ping' })); } catch(_) {}
                 } else if (ws && (ws.readyState === WebSocket.CLOSED || ws.readyState === WebSocket.CLOSING)) {
                     // WS cerrado — reconectar automáticamente
                     console.log(`🔄 Keepalive: reconectando ${type}...`);
@@ -6696,7 +6840,7 @@ window.clearActiveTradeSetup = function() {
                 if (!wsManager) return;
                 wsManager.wsInstances.forEach((ws) => {
                     if (ws && ws.readyState === WebSocket.OPEN) {
-                        // ping eliminado — causa 1008
+                        try { ws.send(JSON.stringify({ method: 'ping' })); } catch(_) {}
                     }
                 });
             }, 3 * 60 * 1000);
@@ -6987,7 +7131,6 @@ function init() {
         console.log('🏛️ Inicializando sistema institucional...');
         (window.initInstitutionalSystem||function(){})();
     }, 2000);
-    setTimeout(() => { if(typeof window.updateFirebaseBtnState==='function') window.updateFirebaseBtnState(); }, 3000);
 
     // ── Tooltip de zonas institucionales ──
     function _initZoneTooltip() {
@@ -7083,16 +7226,9 @@ function init() {
             r2.style.cssText = 'color:#999;font-size:11px;margin-bottom:9px;';
             r2.textContent = formatUsdt(best.totalUsdt)+' USDT  |  Score: '+best.score+'/100';
             const btn = document.createElement('button');
-            btn.textContent = best.tier === 'RETAIL' ? '📌 RETAIL — no guardable' : '💾 Guardar para backtesting';
-            if (best.tier === 'RETAIL') { btn.style.background = 'rgba(100,100,100,0.2)'; btn.style.color = '#666'; btn.style.borderColor = '#444'; }
+            btn.textContent = '💾 Guardar para backtesting';
             btn.style.cssText = 'flex:1;padding:6px 0;border-radius:5px;cursor:pointer;background:rgba(33,150,243,0.3);border:1px solid #2196f3;color:#90caf9;font-size:11px;font-family:Consolas,monospace;';
-            btn.onclick = () => {
-                if (best.tier === 'RETAIL') {
-                    showSaveNotificationInst && showSaveNotificationInst('📌 Zonas RETAIL no se guardan', 'warn');
-                    return;
-                }
-                window.saveInstZoneByPrice(best.price); removeTip(); pinned=false;
-            };
+            btn.onclick = () => { window.saveInstZoneByPrice(best.price); removeTip(); pinned=false; };
 
             // Botón Trade Setup pequeño
             const tsBtn = document.createElement('button');
@@ -7223,8 +7359,8 @@ window.checkFiboConfluence = function() {
     }
 
         // Bloqueo 6 horas para confluencia (más largo que alertas normales)
-        const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : zone.price > 10 ? 1 : zone.price > 1 ? 0.1 : 0.01;
-        const key    = `fibo_conf_${zone.price.toFixed(zone.price>=100?0:zone.price>=1?2:4)}_${symbol}`;
+        const bucket = zone.price > 10000 ? 500 : zone.price > 1000 ? 50 : 5;
+        const key    = `fibo_conf_${Math.round(zone.price/bucket)}_${symbol}`;
         const BLOCK  = 6 * 3600 * 1000;
         const now    = Date.now();
 
@@ -7236,11 +7372,7 @@ window.checkFiboConfluence = function() {
         const isBid = zone.side === 'bid';
         const entry = zone.price;
         const sl    = isBid ? entry * 0.985 : entry * 1.015;
-        const fp    = n => {
-                    if (!n && n !== 0) return '—';
-                    const d = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
-                    return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-                };
+        const fp    = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
         const usdt  = n => n >= 1e9 ? (n/1e9).toFixed(2)+'B' : n >= 1e6 ? (n/1e6).toFixed(2)+'M' : (n/1e3).toFixed(0)+'K';
 
         // TPs según dirección:
@@ -7265,7 +7397,7 @@ window.checkFiboConfluence = function() {
         const dir  = isBid ? '🟢 LONG' : '🔴 SHORT';
         const now_t = new Date().toLocaleTimeString('es-ES');
 
-        if(false) window.TG.send([
+        window.TG.send([
             `⚡ CONFLUENCIA FIBO + ZONA INSTITUCIONAL`,``,
             `Par: ${symbol}   ${dir}`,
             `${ti} ${zone.tier} + Fib ${keyLvl} 🔑`,``,
@@ -7352,6 +7484,7 @@ document.addEventListener('DOMContentLoaded', init);
       <div id="bt-stats-bar"></div>
     </div>
   </div>
+
 
 
 <script>
@@ -7465,9 +7598,8 @@ window.detectFVGs = function(candles, price) {
 window.detectAOI = function(candles) {
     if (!candles || candles.length < 50) return null;
     const recent = candles.slice(-50);
-    // Mxwll Suite: usa high/low reales (mechas completas), no cuerpos
-    const maxH = Math.max(...recent.map(c => c.high));
-    const minL = Math.min(...recent.map(c => c.low));
+    const maxH = Math.max(...recent.map(c => Math.max(c.close, c.open)));
+    const minL = Math.min(...recent.map(c => Math.min(c.close, c.open)));
     return { bearAOI: maxH, bullAOI: minL }; // bearAOI=SHORT zone, bullAOI=LONG zone
 };
 
@@ -7576,8 +7708,49 @@ window.verifyAlerts = async function() {
 console.log('💡 Para verificar alertas manualmente: window.verifyAlerts()');
 
 
-// Monitor WS desactivado — pantalla puede apagarse sin alertas falsas
+// ── MONITOR DE SALUD DE WEBSOCKETS ──
+(function() {
+    const WS_TIMEOUT = 90000; // 90s sin datos = desconectado
+    let _lastDataTime = Date.now();
+    let _wsAlertSent = false;
 
+    // Actualizar timestamp cuando llegan datos
+    window._wsHeartbeat = function() {
+        _lastDataTime = Date.now();
+        if (_wsAlertSent) {
+            _wsAlertSent = false;
+            // Recuperado - notificar
+            const notif = document.getElementById('ws-health-notif');
+            if (notif) notif.remove();
+            if (window.TG?.cfg?.enabled) {
+                window.TG.send('✅ ORDERBOOK RECONECTADO\nConexión restaurada\n🕐 ' + new Date().toLocaleTimeString('es-ES')).catch(()=>{});
+            }
+        }
+    };
+
+    setInterval(() => {
+        const elapsed = Date.now() - _lastDataTime;
+        if (elapsed > WS_TIMEOUT && !_wsAlertSent) {
+            _wsAlertSent = true;
+
+            // Notificación en pantalla
+            let notif = document.getElementById('ws-health-notif');
+            if (!notif) {
+                notif = document.createElement('div');
+                notif.id = 'ws-health-notif';
+                notif.style.cssText = 'position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:99999;background:rgba(200,30,30,0.95);border:2px solid #ff4444;border-radius:8px;padding:10px 20px;color:#fff;font-family:Consolas;font-size:12px;text-align:center;';
+                notif.innerHTML = '⚠️ CONEXIÓN PERDIDA — WebSocket desconectado<br><small>Los datos pueden no ser actuales</small>';
+                document.body.appendChild(notif);
+            }
+
+            // Notificación Telegram
+            if (window.TG?.cfg?.enabled) {
+                window.TG.send('⚠️ ORDERBOOK DESCONECTADO\nWebSocket caído — sin datos en tiempo real\n🕐 ' + new Date().toLocaleTimeString('es-ES')).catch(()=>{});
+            }
+            console.warn('⚠️ WebSocket sin datos por +30s');
+        }
+    }, 10000); // revisar cada 10s
+})();
 
 // ── TIMER PERMANENTE DE LIQUIDEZ — NO ELIMINAR ──
 window.addEventListener('load', function() {
@@ -7608,8 +7781,138 @@ window.addEventListener('load', function() {
         }, 5000);
     }, 3000);
 });
-</script>
-<script>
+
+
+
+// ── FIREBASE CLOUD SYNC ──
+(function() {
+    const CloudSync = {
+        dbUrl: localStorage.getItem('_firebase_url') || '',
+        enabled: localStorage.getItem('_firebase_enabled') === 'true',
+
+        configure: function(url) {
+            url = url || prompt('URL de Firebase (ej: https://xxx.firebaseio.com):', this.dbUrl);
+            if (!url) return;
+            this.dbUrl = url.trim();
+            this.enabled = true;
+            localStorage.setItem('_firebase_url', this.dbUrl);
+            localStorage.setItem('_firebase_enabled', 'true');
+            if (typeof showSaveNotificationInst === 'function')
+                showSaveNotificationInst('☁️ Firebase configurado', 'success');
+            console.log('☁️ Firebase configurado:', this.dbUrl);
+        },
+
+        push: async function() {
+            if (!this.enabled || !this.dbUrl) return;
+            try {
+                const db = window.getFullDatabase ? window.getFullDatabase() : {};
+                const url = this.dbUrl.replace(/\/$/, '') + '/orderbook_bd.json';
+                await fetch(url, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(db) });
+                const t = new Date().toLocaleTimeString('es-ES');
+                console.log('☁️ BD subida a Firebase:', t);
+                const el = document.getElementById('firebase-status');
+                if (el) el.textContent = '☁️ ' + t;
+            } catch(e) { console.error('Firebase push error:', e.message); }
+        },
+
+        pull: async function() {
+            if (!this.enabled || !this.dbUrl) return;
+            try {
+                const url = this.dbUrl.replace(/\/$/, '') + '/orderbook_bd.json';
+                const r = await fetch(url);
+                const db = await r.json();
+                if (!db || typeof db !== 'object') return;
+
+                if (window.loadFullDatabase) {
+                    window.loadFullDatabase(db);
+                } else {
+                    // Manual restore
+                    if (db.zones) {
+                        Object.entries(db.zones).forEach(([pair, data]) => {
+                            localStorage.setItem('inst_zones_history_' + pair, JSON.stringify(data));
+                        });
+                    }
+                    if (db.alerts) localStorage.setItem('tg_alerts_log', JSON.stringify(db.alerts));
+                    if (db.config) {
+                        Object.entries(db.config).forEach(([k,v]) => localStorage.setItem(k, v));
+                    }
+                }
+
+                const n = db.zones ? Object.keys(db.zones).length : 0;
+                if (n > 0 || db.config) {
+                    setTimeout(() => {
+                        if (typeof BT !== 'undefined') {
+                            BT.allHistory = BT.getAllSymbolsHistory ? BT.getAllSymbolsHistory() : {};
+                            if (typeof renderBtSidebarContent === 'function') renderBtSidebarContent();
+                        }
+                        if (typeof startWatchlistMonitor === 'function') startWatchlistMonitor();
+                        console.log('✅ Firebase pull completo:', n, 'pares, UI actualizada');
+                        if (typeof showSaveNotificationInst === 'function')
+                            showSaveNotificationInst('☁️ ' + n + ' pares cargados desde Firebase', 'success');
+                    }, 500);
+                }
+
+                // Restore TG config
+                if (db.config && db.config.tg_config_global) {
+                    try {
+                        const cfg = JSON.parse(db.config.tg_config_global);
+                        if (window.TG) { window.TG.cfg = cfg; window.TG.cfg.enabled = !!(cfg.token && cfg.chatId); }
+                        console.log('✅ Telegram config restaurado desde Firebase');
+                    } catch(_) {}
+                }
+            } catch(e) { console.error('Firebase pull error:', e.message); }
+        }
+    };
+
+    window.CloudSync = CloudSync;
+
+
+// ── Actualizar estado del botón Firebase ──
+window.updateFirebaseBtnState = function() {
+    const btn = document.getElementById('cloud-sync-btn');
+    if (!btn) return;
+    const enabled = window.CloudSync?.enabled;
+    const url = localStorage.getItem('_firebase_url') || '';
+    if (enabled && url) {
+        btn.style.background = 'rgba(0,200,100,0.15)';
+        btn.style.borderColor = '#0c6';
+        btn.style.color = '#0f0';
+        btn.textContent = '☁️ Firebase ON';
+        btn.title = url;
+    } else {
+        btn.style.background = 'rgba(255,255,255,0.05)';
+        btn.style.borderColor = '#444';
+        btn.style.color = '#888';
+        btn.textContent = '☁️ Firebase OFF';
+        btn.title = 'Click para configurar Firebase';
+    }
+};
+
+// Actualizar al cargar y cada 5s
+window.addEventListener('load', function() {
+    setTimeout(window.updateFirebaseBtnState, 1000);
+    setInterval(window.updateFirebaseBtnState, 5000);
+});
+
+    // Auto-pull al iniciar (delay 4s)
+    setTimeout(() => {
+        if (CloudSync.enabled && CloudSync.dbUrl) {
+            CloudSync.pull();
+        }
+    }, 4000);
+
+    // Auto-push con debounce cuando se guarda
+    let _pushTimer = null;
+    const _origSave = window.triggerDbSave;
+    window.triggerDbSave = function() {
+        if (_origSave) _origSave();
+        if (CloudSync.enabled) {
+            if (_pushTimer) clearTimeout(_pushTimer);
+            _pushTimer = setTimeout(() => { CloudSync.push(); _pushTimer = null; }, 10000);
+        }
+    };
+})();
+
 // ── MONITOR MULTI-PAR EN TIEMPO REAL ──
 // Lee los pares guardados en backtesting y monitorea sus precios
 window._watchlistSockets = {};
@@ -7755,11 +8058,7 @@ async function checkFiboConfluenceForPair(pair, price, zones) {
             const isBid   = zone.side === 'bid';
             const entry   = zone.price;
             const sl      = isBid ? entry * 0.985 : entry * 1.015;
-            const fp      = n => {
-                    if (!n && n !== 0) return '—';
-                    const d = n >= 10000 ? 1 : n >= 1000 ? 2 : n >= 100 ? 3 : n >= 10 ? 3 : n >= 1 ? 4 : n >= 0.1 ? 5 : n >= 0.01 ? 6 : 8;
-                    return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});
-                };
+            const fp      = n => n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
             const usdt    = n => n>=1e9?(n/1e9).toFixed(2)+'B':n>=1e6?(n/1e6).toFixed(2)+'M':(n/1e3).toFixed(0)+'K';
             const pct     = p => ((Math.abs(p-entry)/entry)*100).toFixed(2);
             const dir     = isBid ? '🟢 LONG' : '🔴 SHORT';
@@ -7783,7 +8082,7 @@ async function checkFiboConfluenceForPair(pair, price, zones) {
             const sess   = window.getTradingSession?.() || { name: '' };
             const sEmoji = sess.name === 'New York' ? '🇺🇸' : sess.name === 'London' ? '🇬🇧' : '🌏';
 
-            if(false) window.TG.send([
+            window.TG.send([
                 `⚡ CONFLUENCIA ${tfDef.label}`,``,
                 `Par: ${pair}   ${dir}`,
                 `${ti} ${zone.tier} + Fib ${lvl} 🔑`,
@@ -7817,7 +8116,7 @@ function startWatchlistMonitor() {
     }
     if (!pairs.size) return;
 
-    const pairList = [...pairs].slice(0, 6); // máx 6 pares
+    const pairList = [...pairs].slice(0, 8); // máx 8 pares
     window._watchlistPrices = window._watchlistPrices || {};
     console.log(`📡 Watchlist activo: ${pairList.join(', ')} (${pairList.length} pares)`);
 
@@ -7872,118 +8171,69 @@ function startWatchlistMonitor() {
 
     connectCombined();
 }
-</script>
 
-<script>
-// ── FIREBASE CLOUD SYNC ──
+
+// ── NOTIFICACIONES DE RESULTADO TP/SL ──
 (function() {
-    const CloudSync = {
-        dbUrl: localStorage.getItem('_firebase_url') || 'https://bdorderbook-6b104-default-rtdb.firebaseio.com',
-        enabled: localStorage.getItem('_firebase_enabled') === '1' || localStorage.getItem('_firebase_enabled') === 'true',
+    const nc = document.createElement('div');
+    nc.id = 'alert-notif-container';
+    nc.style.cssText = 'position:fixed;top:70px;right:16px;z-index:99999;display:flex;flex-direction:column;gap:8px;pointer-events:none;';
+    document.body.appendChild(nc);
 
-        configure: function() {
-            const url = prompt('URL de Firebase Realtime Database:', this.dbUrl || 'https://TU-PROJECT.firebaseio.com');
-            if (url === null) return;
-            this.dbUrl = url.trim();
-            localStorage.setItem('_firebase_url', this.dbUrl);
-            this.enabled = !!this.dbUrl;
-            localStorage.setItem('_firebase_enabled', this.enabled ? '1' : '0');
-            if (typeof window.updateFirebaseBtnState === 'function') window.updateFirebaseBtnState();
-            if (this.enabled) { this.pull(); console.log('☁️ Firebase configurado:', this.dbUrl); }
-        },
+    document.addEventListener('click', function() {
+        if (!window._audioCtx) window._audioCtx = new AudioContext();
+        else if (window._audioCtx.state === 'suspended') window._audioCtx.resume();
+    });
 
-        push: async function() {
-            if (!this.enabled || !this.dbUrl) return;
-            try {
-                const data = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    const k = localStorage.key(i);
-                    if (k && !k.startsWith('_firebase')) data[k] = localStorage.getItem(k);
-                }
-                const r = await fetch((this.dbUrl || 'https://bdorderbook-6b104-default-rtdb.firebaseio.com') + '/orderbook.json', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (r.ok) console.log('☁️ BD subida a Firebase:', new Date().toLocaleTimeString('es-ES'));
-            } catch(e) { console.warn('Firebase push error:', e.message); }
-        },
-
-        pull: async function() {
-            if (!this.enabled || !this.dbUrl) return;
-            try {
-                const r = await fetch((this.dbUrl || 'https://bdorderbook-6b104-default-rtdb.firebaseio.com') + '/orderbook.json');
-                if (!r.ok) return;
-                const data = await r.json();
-                if (!data || data.error) return;
-                let count = 0;
-                Object.keys(data).forEach(k => {
-                    if (k && data[k] !== null && k !== 'last_symbol') {
-                        localStorage.setItem(k, data[k]); count++;
-                    }
-                });
-                console.log(`✅ Firebase pull completo: ${count} claves`);
-                if (typeof window.updateFirebaseBtnState === 'function') window.updateFirebaseBtnState();
-            } catch(e) { console.warn('Firebase pull error:', e.message); }
+    window.showResultNotif = function(a, result) {
+        const isWin = ['TP1','TP2','TP3'].includes(result);
+        const c = {
+            TP3:{bg:'rgba(0,200,80,0.95)',border:'#00e676',emoji:'🎯🎯🎯'},
+            TP2:{bg:'rgba(0,180,70,0.95)',border:'#66bb6a',emoji:'🎯🎯'},
+            TP1:{bg:'rgba(0,160,60,0.95)',border:'#a5d6a7',emoji:'🎯'},
+            SL: {bg:'rgba(200,30,30,0.95)',border:'#ef5350',emoji:'🛑'},
+        }[result] || {bg:'rgba(50,50,50,0.9)',border:'#888',emoji:'ℹ️'};
+        const box = document.createElement('div');
+        box.style.cssText = `background:${c.bg};border:2px solid ${c.border};border-radius:10px;padding:12px 16px;font-family:Consolas,monospace;font-size:11px;color:#fff;pointer-events:auto;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.6);min-width:220px;animation:slideInN 0.3s ease;`;
+        box.innerHTML = `<div style="font-size:16px;margin-bottom:4px;">${c.emoji} ${result} ALCANZADO</div><div style="font-weight:700;">${a.pair||''} ${a.dir||''}</div><div style="color:rgba(255,255,255,0.8);margin-top:4px;">Zona: ${(a.zonePrice||0).toFixed(2)}<br>${isWin?'✅ Objetivo: '+result:'❌ Stop Loss'}</div><div style="color:rgba(255,255,255,0.5);font-size:9px;margin-top:6px;">${new Date().toLocaleTimeString('es-ES')} · Click para cerrar</div>`;
+        box.onclick = () => box.remove();
+        nc.appendChild(box);
+        if(window.TG?.cfg?.enabled) {
+            window.TG.send(`${c.emoji} ${result} — ${a.pair}
+${a.dir}
+🕐 ${new Date().toLocaleTimeString('es-ES')}`).catch(()=>{});
         }
+        try {
+            const ctx = window._audioCtx || new AudioContext();
+            window._audioCtx = ctx;
+            if(ctx.state==='suspended') ctx.resume();
+            const o=ctx.createOscillator(), g=ctx.createGain();
+            o.connect(g); g.connect(ctx.destination);
+            o.frequency.value = isWin?880:220;
+            g.gain.setValueAtTime(0.1,ctx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);
+            o.start(); o.stop(ctx.currentTime+0.5);
+        } catch(_){}
+        setTimeout(()=>{if(box.parentNode)box.remove();},15000);
     };
 
-    window.CloudSync = CloudSync;
+    document.head.insertAdjacentHTML('beforeend','<style>@keyframes slideInN{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}</style>');
 
-    // Auto-pull al cargar
-    setTimeout(() => {
-        if (CloudSync.enabled && CloudSync.dbUrl) {
-            CloudSync.pull().then(() => {
-                if (typeof window.updateFirebaseBtnState === 'function') window.updateFirebaseBtnState();
+    // Monitor resultados cada 30s
+    const _k = {};
+    setInterval(()=>{
+        try {
+            JSON.parse(localStorage.getItem('tg_alerts_log')||'[]').forEach(a=>{
+                if(!a.id) return;
+                if(_k[a.id]===undefined) { _k[a.id]=a.result; return; }
+                if(_k[a.id]==='PENDING' && a.result!=='PENDING') {
+                    _k[a.id]=a.result;
+                    if(['TP1','TP2','TP3','SL'].includes(a.result)) window.showResultNotif(a,a.result);
+                }
             });
-        }
-        if (typeof window.updateFirebaseBtnState === 'function') window.updateFirebaseBtnState();
-    }, 2000);
-
-    // Auto-push cada 30s si hay datos
-    setInterval(() => {
-        if (CloudSync.enabled) CloudSync.push();
+        } catch(_){}
     }, 30000);
-
-    // Actualizar botón Firebase
-    function _updateBtn() {
-        const btn = document.getElementById('cloud-sync-btn');
-        if (!btn) { setTimeout(_updateBtn, 500); return; }
-        const url = localStorage.getItem('_firebase_url') || '';
-        const on = (localStorage.getItem('_firebase_enabled') === '1') && !!url;
-        if (on) {
-            btn.style.cssText = 'background:rgba(0,200,100,0.15);border:1px solid #0c6;color:#0f0;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer';
-            btn.textContent = '☁️ Firebase ON';
-        } else {
-            btn.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid #444;color:#888;padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer';
-            btn.textContent = '☁️ Firebase OFF';
-        }
-    }
-
-// Auto-export eliminado — exportar manualmente con el botón
-
-    window.updateFirebaseBtnState = _updateBtn;
-    setTimeout(_updateBtn, 1000);
-    setInterval(_updateBtn, 5000);
 })();
 </script>
-
-
-
-
-    <!-- Botón flotante guardar zonas -->
-    <button id="float-save-btn"
-        onclick="window.saveAllInstZones && window.saveAllInstZones()"
-        title="Guardar zonas nuevas"
-        style="position:fixed;bottom:80px;right:15px;z-index:99999;
-               width:44px;height:44px;border-radius:50%;
-               background:rgba(0,200,100,0.85);border:2px solid #0c6;
-               color:#fff;font-size:20px;cursor:pointer;
-               box-shadow:0 2px 8px rgba(0,0,0,0.4);">💾</button>
-
-
-
-
-
 </body>
 </html>
